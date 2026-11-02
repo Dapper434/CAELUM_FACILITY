@@ -9,7 +9,7 @@ export default function AuditTrail({ entries, showEntity = false }) {
       {entries.map((e) => (
         <li key={e.id || e.seq} className="ml-4">
           <span className="absolute -left-[7px] w-3 h-3 rounded-full bg-brand-burgundy mt-1" />
-          <div className="text-sm font-semibold">{e.action}{showEntity && e.transfer_code ? <span className="ml-2 font-mono text-xs text-slate-500">{e.transfer_code}</span> : null}</div>
+          <div className="text-sm font-semibold">{e.action}{showEntity && e.entity_type ? <span className="ml-2 font-mono text-xs text-slate-500">{e.entity_type}</span> : null}</div>
           <div className="text-xs text-slate-500">#{e.seq} · {formatDateTime(e.at)} · {humanize(e.actor_role)}</div>
           {e.payload && Object.keys(e.payload).length > 0 && (
             <div className="text-[11px] font-mono text-slate-500 break-all">{JSON.stringify(e.payload)}</div>

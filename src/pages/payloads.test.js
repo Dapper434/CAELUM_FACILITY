@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { toRequestPayload } from '../components/NewRequestForm';
 import { toUnitPayload } from '../components/AddUnitsForm';
-import { mergeAudit } from './AuditPage';
+import { appendPage } from './AuditPage';
 
 describe('request payload', () => {
   it('drops empty optional fields and casts units', () => {
@@ -18,13 +18,9 @@ describe('unit payload', () => {
   });
 });
 
-describe('mergeAudit', () => {
-  it('dedupes by seq and sorts newest first', () => {
-    const merged = mergeAudit([
-      { transfer: { transfer_code: 'TRF-1' }, entries: [{ seq: 1 }, { seq: 3 }] },
-      { transfer: { transfer_code: 'TRF-2' }, entries: [{ seq: 2 }, { seq: 3 }] },
-    ]);
-    expect(merged.map((e) => e.seq)).toEqual([3, 2, 1]);
-    expect(merged[1].transfer_code).toBe('TRF-2');
+describe('appendPage', () => {
+  it('dedupes by seq and keeps newest first', () => {
+    const merged = appendPage([{ seq: 9 }, { seq: 7 }], [{ seq: 7 }, { seq: 5 }, { seq: 6 }]);
+    expect(merged.map((e) => e.seq)).toEqual([9, 7, 6, 5]);
   });
 });
