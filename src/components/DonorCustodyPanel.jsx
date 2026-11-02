@@ -6,7 +6,7 @@ import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
 import { Button, ErrorBanner, Loading } from './ui';
 import Countdown from './Countdown';
-import { humanize } from '../utils/format';
+import { formatDateTime, humanize } from '../utils/format';
 
 function PackForm({ transfer, onDone }) {
   const reserved = (transfer.units || []).map((u) => u.unit_code);
@@ -72,11 +72,13 @@ function QrDisplay({ transfer }) {
   if (qr.error) return <ErrorBanner error={qr.error} />;
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <div className="bg-white p-3 rounded-xl border border-border-warm"><QRCodeSVG value={qr.data.qr_payload} size={168} /></div>
+      <div className={`bg-white p-3 rounded-xl border border-border-warm ${qr.data.expired ? 'opacity-30' : ''}`}><QRCodeSVG value={qr.data.qr_payload} size={168} /></div>
       <div className="text-sm">
         <div className="label">Seal number</div>
         <div className="font-mono text-lg font-bold">{qr.data.seal_number}</div>
-        <p className="text-xs text-slate-500 mt-2 max-w-xs">The courier scans this code at pickup and types the seal number.</p>
+        {qr.data.expired
+          ? <p role="alert" className="text-xs font-bold text-status-crimson mt-2 max-w-xs">This QR expired {formatDateTime(qr.data.expires_at)}. Pickup will be rejected; contact the CAELUM admin.</p>
+          : <p className="text-xs text-slate-500 mt-2 max-w-xs">Valid until {formatDateTime(qr.data.expires_at)} · <Countdown until={qr.data.expires_at} label="" /><br />The courier scans this code at pickup and types the seal number.</p>}
       </div>
     </div>
   );
