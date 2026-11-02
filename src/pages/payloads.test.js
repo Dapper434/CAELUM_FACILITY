@@ -39,3 +39,13 @@ describe('correction payload', () => {
     expect(toCorrectionPayload(unit, { lot_number: 'L1', expiry_date: '', storage_temp_c: '4', reason: 'x' })).toBeNull();
   });
 });
+
+import { toBars } from './ForecastPage';
+
+describe('forecast history bars', () => {
+  it('maps units_issued and tolerates missing data', () => {
+    expect(toBars([{ date: '2026-10-07', units_issued: 2 }, { date: '2026-10-08', units_issued: null }]))
+      .toEqual([{ date: '2026-10-07', units: 2 }, { date: '2026-10-08', units: 0 }]);
+    expect(toBars(undefined)).toEqual([]);
+  });
+});

@@ -9,15 +9,20 @@ import BloodFilters from '../components/BloodFilters';
 import SuggestedRequestCard from '../components/SuggestedRequestCard';
 import { formatDateTime } from '../utils/format';
 
-function DemandBars({ days }) {
+/** Forecast history points → bar data. */
+export function toBars(history) {
+  return (history || []).map((h) => ({ date: h.date, units: Number(h.units_issued) || 0 }));
+}
+
+function DemandBars({ days, compact }) {
   const max = Math.max(1, ...days.map((d) => d.units));
   return (
-    <div className="flex items-end gap-2 h-32 mt-3">
+    <div className={`flex items-end ${compact ? 'gap-0.5' : 'gap-2'} h-32 mt-3`}>
       {days.map((d) => (
-        <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-          <span className="text-[10px] font-mono text-slate-500">{d.units.toFixed(1)}</span>
+        <div key={d.date} title={`${d.date}: ${d.units}`} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+          {!compact && <span className="text-[10px] font-mono text-slate-500">{d.units.toFixed(1)}</span>}
           <div className="w-full bg-brand-cobalt/80 rounded-t" style={{ height: `${(d.units / max) * 90}%` }} />
-          <span className="text-[10px] text-slate-500">{d.date.slice(5)}</span>
+          {!compact && <span className="text-[10px] text-slate-500">{d.date.slice(5)}</span>}
         </div>
       ))}
     </div>
@@ -27,6 +32,7 @@ function DemandBars({ days }) {
 export default function ForecastPage() {
   const [filters, setFilters] = useState({ blood_group: 'O-', product_type: 'packed_rbc' });
   const forecast = useAsync(() => forecastApi.get(filters), [filters.blood_group, filters.product_type]);
+  const history = useAsync(() => forecastApi.history({ ...filters, days: 28 }), [filters.blood_group, filters.product_type]);
   const alerts = useAsync(() => forecastApi.alerts(), []);
   const suggested = useAsync(() => requestsApi.list('suggested'), []);
   const runAction = useAction();
@@ -79,6 +85,17 @@ export default function ForecastPage() {
           )}
         </Card>
       </div>
+      <Card title="Demand history (last 28 days)">
+        <ErrorBanner error={history.error} />
+        {history.loading ? <Loading /> : history.data && (
+          <>
+            <p className="text-xs text-slate-500">
+              {history.data.from} → {history.data.to} · {history.data.total_issued} units issued · avg {history.data.average_daily}/day · {history.data.days_with_data} days with data
+            </p>
+            <DemandBars days={toBars(history.data.history)} compact />
+          </>
+        )}
+      </Card>
       <Card title="Forecast-suggested requests">
         <ErrorBanner error={suggested.error} />
         {suggested.loading ? <Loading /> : (suggested.data || []).length === 0 ? <Empty>No suggestions waiting.</Empty> : (
