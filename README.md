@@ -2,7 +2,7 @@
 
 Hospital app for the CAELUM blood-transfer network. One app serves both sides of a transfer:
 a facility is the **recipient** when it raises a request and the **donor** when it answers an offer.
-All data goes through the shared CAELUM API (contract v1, `/api/v1`); sign-in uses Supabase Auth.
+All data goes through the shared CAELUM API (contract v1.1.0, `/api/v1`); sign-in uses Supabase Auth.
 
 ## Features
 
@@ -41,9 +41,13 @@ npm run dev            # http://localhost:5173
 | `VITE_API_BASE_URL` | API base including `/api/v1`, e.g. `http://localhost:5000/api/v1` |
 | `VITE_SUPABASE_URL` | Supabase project URL (same project as the admin console) |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
+| `VITE_DEMO_MODE` | `true` only for a local memory-store API: shows demo sign-in buttons |
 
 The API must list the app origin in `CORS_ORIGINS` (5173 is in the default list).
 Users need `app_metadata.role = "facility"` and a `facility_id`.
+
+If `VITE_API_BASE_URL` is missing the app shows a configuration error screen; only `npm run dev` falls back to `http://localhost:5000/api/v1`.
+An expired or invalid token (API `401`) signs the user out and returns to `/login`.
 
 Scripts: `npm run dev`, `npm run build`, `npm run preview`, `npm test` (Vitest).
 
@@ -66,3 +70,37 @@ src/
 - **Live data:** pages poll (offers 15 s, tracking 10 s while in transit). Timeouts are computed client-side from `expires_at`, `pack_deadline` and `courier_accept_deadline`; the server enforces them.
 - **Roles:** on a transfer the app compares `donor_facility_id` with the signed-in facility to show the donor or recipient panel.
 - **Styling:** Tailwind with the admin console palette (warm canvas, cobalt, burgundy) and Plus Jakarta Sans.
+
+## Demo logins (memory store)
+
+Run the API locally on the in-memory store; it seeds demo data and enables `POST /api/v1/auth/demo-login` (no password, never on Supabase):
+
+```bash
+cd ../API && STORE_BACKEND=memory python main.py        # port 5000
+```
+
+Set `VITE_DEMO_MODE=true` in `.env` and use the buttons on the sign-in page, or get a token by hand:
+
+```bash
+curl -s -X POST http://localhost:5000/api/v1/auth/demo-login \
+  -H 'Content-Type: application/json' -d '{"login":"recipient"}'
+```
+
+| login | Facility | Side |
+|---|---|---|
+| `recipient` (`recipient@caelum.demo`) | Mama Lucy Kibaki | recipient: in-transit transfer with seal `SEAL-DEMO-0001`, a pending offer |
+| `donor` (`donor@caelum.demo`) | Nairobi Hospital Hub | donor: answer the pending offer within 5 min of API start |
+
+The demo token is kept in `sessionStorage` for the tab. Restarting the API resets the demo.
+
+## Deploy (Vercel)
+
+1. Import the repo in Vercel; framework preset **Vite** (build `npm run build`, output `dist`).
+2. Set the environment variables for Production (and Preview):
+   - `VITE_API_BASE_URL` = public API URL ending in `/api/v1` (required; the build shows a config error screen without it)
+   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` = the shared Supabase project
+   - leave `VITE_DEMO_MODE` unset or `false`
+3. `vercel.json` rewrites all paths to `index.html` so deep links like `/transfers/:id` work.
+4. Add the Vercel domain to the API's `CORS_ORIGINS`.
+
+`VITE_*` values are baked into the bundle at build time, so redeploy after changing them. Only the anon key belongs here, never a service-role key.
