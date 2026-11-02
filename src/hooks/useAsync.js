@@ -1,32 +1,52 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/** Runs `fn` on mount / when deps change; optional polling interval in ms. */
+/**
+ * Runs `fn` on mount / when deps change. With `interval` it polls, pausing while
+ * the tab is hidden and refreshing once when it becomes visible again.
+ * No state updates after unmount.
+ */
 export function useAsync(fn, deps = [], { interval } = {}) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const fnRef = useRef(fn);
+  const mounted = useRef(true);
   fnRef.current = fn;
 
   const run = useCallback(async () => {
     try {
       const result = await fnRef.current();
+      if (!mounted.current) return;
       setData(result);
       setError(null);
     } catch (err) {
-      setError(err);
+      if (mounted.current) setError(err);
     } finally {
-      setLoading(false);
+      if (mounted.current) setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   useEffect(() => {
+    mounted.current = true;
     setLoading(true);
     run();
-    if (!interval) return undefined;
-    const t = setInterval(run, interval);
-    return () => clearInterval(t);
+    let timer = null;
+    const start = () => { if (interval && !timer) timer = setInterval(run, interval); };
+    const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else { run(); start(); }
+    };
+    if (interval) {
+      if (!document.hidden) start();
+      document.addEventListener('visibilitychange', onVisibility);
+    }
+    return () => {
+      mounted.current = false;
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [run, interval]);
 
   return { data, error, loading, reload: run, setData };
