@@ -50,3 +50,20 @@ describe('http client', () => {
     await expect(http.get('/alerts', null, { withMeta: true })).resolves.toEqual({ data: [1, 2], meta: { count: 2 } });
   });
 });
+
+describe('401 handling', () => {
+  it('calls onUnauthorized once and still throws', async () => {
+    const onUnauthorized = vi.fn();
+    const fetchImpl = vi.fn().mockResolvedValue(fakeResponse(401, { error: { code: 'unauthorized', message: 'Token expired' } }));
+    const http = createHttpClient({ baseUrl: 'x', fetchImpl, onUnauthorized });
+    await expect(http.get('/me')).rejects.toMatchObject({ status: 401, code: 'unauthorized' });
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
+  });
+  it('does not call it for other errors', async () => {
+    const onUnauthorized = vi.fn();
+    const fetchImpl = vi.fn().mockResolvedValue(fakeResponse(403, { error: { code: 'forbidden' } }));
+    const http = createHttpClient({ baseUrl: 'x', fetchImpl, onUnauthorized });
+    await expect(http.get('/me')).rejects.toMatchObject({ status: 403 });
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+});

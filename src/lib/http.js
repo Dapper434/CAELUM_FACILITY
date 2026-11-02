@@ -22,7 +22,7 @@ function buildQuery(params) {
  * Creates a small JSON client for the CAELUM API envelope:
  * success `{data, meta?}`, error `{error: {code, message, details}}`.
  */
-export function createHttpClient({ baseUrl, getToken, fetchImpl }) {
+export function createHttpClient({ baseUrl, getToken, fetchImpl, onUnauthorized }) {
   const doFetch = fetchImpl || ((...a) => globalThis.fetch(...a));
 
   async function request(method, path, { params, body, withMeta } = {}) {
@@ -48,6 +48,9 @@ export function createHttpClient({ baseUrl, getToken, fetchImpl }) {
     }
     if (!res.ok) {
       const e = json?.error || {};
+      if (res.status === 401 && onUnauthorized) {
+        try { await onUnauthorized(); } catch { /* still surface the error */ }
+      }
       throw new ApiError(res.status, e.code, e.message, e.details);
     }
     if (withMeta) return { data: json?.data, meta: json?.meta || {} };

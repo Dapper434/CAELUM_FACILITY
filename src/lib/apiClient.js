@@ -1,5 +1,15 @@
 import { config } from './config';
 import { createHttpClient } from './http';
-import { getAccessToken } from './supabase';
+import { getAccessToken, supabase } from './supabase';
+import { clearDemoSession } from './demoSession';
 
-export const http = createHttpClient({ baseUrl: config.apiBaseUrl, getToken: getAccessToken });
+/** Expired or invalid token: drop the session and go to sign-in. */
+export async function handleUnauthorized() {
+  clearDemoSession();
+  if (supabase) await supabase.auth.signOut();
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+    window.location.assign('/login');
+  }
+}
+
+export const http = createHttpClient({ baseUrl: config.apiBaseUrl, getToken: getAccessToken, onUnauthorized: handleUnauthorized });
