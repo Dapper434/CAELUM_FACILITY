@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 
 vi.mock('../api/offers', () => ({
   offersApi: { hold: vi.fn(), accept: vi.fn(), decline: vi.fn() },

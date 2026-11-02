@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import 'leaflet/dist/leaflet.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
@@ -12,7 +12,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     {config.errors.length > 0 ? <ConfigErrorScreen errors={config.errors} /> : (
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter>
         <AuthProvider>
           <App />
         </AuthProvider>

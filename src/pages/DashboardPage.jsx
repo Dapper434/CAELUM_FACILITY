@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { forecastApi } from '../api/forecast';
 import { offersApi } from '../api/offers';
 import { requestsApi } from '../api/requests';

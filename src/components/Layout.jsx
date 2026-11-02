@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router';
 import {
   LayoutDashboard, Droplets, Search, TrendingUp, ClipboardList, Inbox, Truck, ShieldCheck, Settings, LogOut,
 } from 'lucide-react';

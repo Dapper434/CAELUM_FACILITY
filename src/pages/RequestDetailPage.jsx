@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 import { requestsApi } from '../api/requests';
 import { offersApi } from '../api/offers';
 import { useAsync } from '../hooks/useAsync';

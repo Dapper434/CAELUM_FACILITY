@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { requestsApi } from '../api/requests';
 import { useAsync } from '../hooks/useAsync';
 import { Button, Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui';

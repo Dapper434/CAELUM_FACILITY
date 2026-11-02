@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { transfersApi } from '../api/transfers';
 import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
