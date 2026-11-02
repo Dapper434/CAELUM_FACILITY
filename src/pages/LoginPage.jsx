@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button, ErrorBanner } from '../components/ui';
+import DemoLogin from '../components/DemoLogin';
 
 export default function LoginPage() {
-  const { session, signIn, configured } = useAuth();
+  const { session, signIn, configured, demoMode } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -38,7 +39,7 @@ export default function LoginPage() {
             <p className="text-xs text-slate-500">Sign in with your hospital account</p>
           </div>
         </div>
-        {!configured && <ErrorBanner error={{ message: 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.' }} />}
+        
         <ErrorBanner error={error} />
         <div>
           <label className="label" htmlFor="email">Email</label>
@@ -48,7 +49,8 @@ export default function LoginPage() {
           <label className="label" htmlFor="password">Password</label>
           <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
         </div>
-        <Button type="submit" busy={busy} className="w-full">Sign in</Button>
+        {configured && <Button type="submit" busy={busy} className="w-full">Sign in</Button>}
+        {demoMode && <DemoLogin onDone={() => navigate(location.state?.from || '/', { replace: true })} />}
       </form>
     </div>
   );
