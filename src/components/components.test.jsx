@@ -5,7 +5,6 @@ import StatusBadge, { toneFor } from './StatusBadge';
 import Countdown from './Countdown';
 import CandidateList from './CandidateList';
 import StageTimeline from './StageTimeline';
-import { SealCheck } from './RecipientCustodyPanel';
 
 describe('StatusBadge', () => {
   it('humanises the value and picks a tone', () => {
@@ -56,13 +55,3 @@ describe('StageTimeline', () => {
   });
 });
 
-describe('SealCheck', () => {
-  it('reports match and mismatch', () => {
-    render(<SealCheck expected="SEAL-0042" />);
-    const input = screen.getByLabelText(/Seal number/);
-    fireEvent.change(input, { target: { value: 'SEAL-9' } });
-    expect(screen.getByText('Does not match')).toBeInTheDocument();
-    fireEvent.change(input, { target: { value: 'seal-0042' } });
-    expect(screen.getByText('Matches')).toBeInTheDocument();
-  });
-});

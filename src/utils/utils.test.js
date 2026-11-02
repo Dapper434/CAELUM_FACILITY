@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { lineStringToLatLngs, hasCoords } from './geo';
 import { isExcursion } from './temperature';
-import { parseQrPayload, sealMatches } from './custody';
+import { parseQrPayload } from './custody';
 
 describe('geo', () => {
   it('flips GeoJSON lng/lat for Leaflet', () => {
@@ -25,11 +25,6 @@ describe('temperature', () => {
 });
 
 describe('custody', () => {
-  it('compares seals ignoring case and spaces', () => {
-    expect(sealMatches('SEAL-0042', ' seal-0042 ')).toBe(true);
-    expect(sealMatches('SEAL-0042', 'SEAL-0043')).toBe(false);
-    expect(sealMatches('', '')).toBe(false);
-  });
   it('parses QR payloads', () => {
     const p = parseQrPayload('caelum:v1:abc:SEAL-1:1767225600:deadbeef');
     expect(p.transferId).toBe('abc');

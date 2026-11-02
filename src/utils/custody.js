@@ -1,13 +1,3 @@
-/** Seal check shown to the recipient before confirming receipt. */
-export function normalizeSeal(value) {
-  return String(value || '').trim().toUpperCase().replace(/\s+/g, '');
-}
-
-export function sealMatches(expected, entered) {
-  const a = normalizeSeal(expected);
-  return a.length > 0 && a === normalizeSeal(entered);
-}
-
 /** Parse "caelum:v1:<transfer_id>:<seal>:<exp_unix>:<sig>". */
 export function parseQrPayload(payload) {
   const parts = String(payload || '').split(':');

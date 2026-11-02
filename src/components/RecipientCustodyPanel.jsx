@@ -4,23 +4,35 @@ import { transfersApi } from '../api/transfers';
 import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
 import { RECEIPT_CONDITIONS } from '../utils/constants';
-import { sealMatches } from '../utils/custody';
 import { formatDateTime } from '../utils/format';
 import { Button, ErrorBanner, Loading } from './ui';
 
-export function SealCheck({ expected }) {
+export const SEAL_CHECK_STAGES = ['in_transit', 'arrived', 'delivered'];
+
+/** Seal number is compared by the API; every check is logged as a custody event. */
+export function SealCheck({ transferId, onChecked }) {
   const [entered, setEntered] = useState('');
-  const ok = sealMatches(expected, entered);
+  const [result, setResult] = useState(null);
+  const { busy, error, run } = useAction();
+  async function check(e) {
+    e.preventDefault();
+    setResult(null);
+    const res = await run(() => transfersApi.sealCheck(transferId, entered.trim()));
+    if (res) { setResult(res); onChecked?.(res); }
+  }
   return (
-    <div>
+    <form onSubmit={check}>
       <label className="label" htmlFor="seal-check">Seal number on the cooler</label>
-      <div className="flex items-center gap-2">
-        <input id="seal-check" className="input font-mono" value={entered} onChange={(e) => setEntered(e.target.value)} placeholder="SEAL-…" />
-        {entered && (ok
+      <ErrorBanner error={error} />
+      <div className="flex flex-wrap items-center gap-2">
+        <input id="seal-check" className="input font-mono max-w-xs" value={entered} onChange={(e) => { setEntered(e.target.value); setResult(null); }} placeholder="SEAL-…" required />
+        <Button type="submit" variant="ghost" busy={busy} disabled={!entered.trim()}>Check seal</Button>
+        {result && (result.match
           ? <span className="flex items-center gap-1 text-xs font-bold text-status-emerald"><CheckCircle2 className="w-4 h-4" /> Matches</span>
           : <span className="flex items-center gap-1 text-xs font-bold text-status-crimson"><XCircle className="w-4 h-4" /> Does not match</span>)}
       </div>
-    </div>
+      {result && <div className="text-[11px] text-slate-400 mt-1">Checked {formatDateTime(result.checked_at)} · logged to custody</div>}
+    </form>
   );
 }
 
@@ -60,11 +72,10 @@ function ConfirmReceipt({ transfer, onDone }) {
 
 export default function RecipientCustodyPanel({ transfer, onChange }) {
   const { stage } = transfer;
-  const sealed = ['packed', 'courier_assigned', 'in_transit', 'arrived', 'delivered'].includes(stage);
   return (
     <div className="space-y-4">
       {['packed', 'courier_assigned', 'in_transit', 'arrived'].includes(stage) && <DropOffCode transfer={transfer} />}
-      {sealed && transfer.seal_number && <SealCheck expected={transfer.seal_number} />}
+      {SEAL_CHECK_STAGES.includes(stage) && <SealCheck transferId={transfer.id} onChecked={onChange} />}
       {stage === 'delivered' && !transfer.received_confirmed_at && <ConfirmReceipt transfer={transfer} onDone={onChange} />}
       {transfer.received_confirmed_at && (
         <p className="text-sm text-status-emerald font-semibold">Receipt confirmed {formatDateTime(transfer.received_confirmed_at)} · {transfer.receipt_condition}</p>

@@ -10,6 +10,7 @@ export const transfersApi = {
   confirmReceipt: (id, condition, note) =>
     http.post(`/transfers/${id}/confirm-receipt`, note ? { condition, note } : { condition }),
   cancel: (id, reason) => http.post(`/transfers/${id}/cancel`, reason ? { reason } : {}),
+  sealCheck: (id, sealNumber) => http.post(`/transfers/${id}/seal-check`, { seal_number: sealNumber }),
   custody: (id) => http.get(`/transfers/${id}/custody`),
   tracking: (id) => http.get(`/transfers/${id}/tracking`),
   temperature: (id) => http.get(`/transfers/${id}/temperature`),
