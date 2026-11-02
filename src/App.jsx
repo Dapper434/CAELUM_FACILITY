@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router';
+import { Route, Routes } from 'react-router';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
@@ -14,6 +14,7 @@ import TransfersPage from './pages/TransfersPage';
 import TransferDetailPage from './pages/TransferDetailPage';
 import AuditPage from './pages/AuditPage';
 import SettingsPage from './pages/SettingsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
@@ -31,8 +32,8 @@ export default function App() {
         <Route path="transfers/:id" element={<TransferDetailPage />} />
         <Route path="audit" element={<AuditPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
