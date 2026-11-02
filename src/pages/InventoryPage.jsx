@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { inventoryApi } from '../api/inventory';
 import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
@@ -6,6 +6,7 @@ import { Button, Card, Empty, ErrorBanner, Loading, PageHeader } from '../compon
 import StatusBadge from '../components/StatusBadge';
 import BloodFilters from '../components/BloodFilters';
 import AddUnitsForm from '../components/AddUnitsForm';
+import CorrectUnitForm from '../components/CorrectUnitForm';
 import { formatDateTime, formatTemp } from '../utils/format';
 import { productLabel } from '../utils/constants';
 
@@ -14,6 +15,7 @@ const STATUSES = ['', 'available', 'reserved', 'in_transit', 'transferred', 'exp
 export default function InventoryPage() {
   const [filters, setFilters] = useState({ blood_group: '', product_type: '', status: '' });
   const [showAdd, setShowAdd] = useState(false);
+  const [editing, setEditing] = useState(null);
   const { data, error, loading, reload } = useAsync(() => inventoryApi.list(filters), [JSON.stringify(filters)]);
   const action = useAction();
 
@@ -27,7 +29,7 @@ export default function InventoryPage() {
     <div>
       <PageHeader
         title="Inventory"
-        subtitle="Units held by this facility, soonest expiry first"
+        subtitle="Units held by this facility, soonest expiry first. Corrections are logged to the audit trail."
         actions={<Button onClick={() => setShowAdd((v) => !v)}>{showAdd ? 'Close' : 'Add units'}</Button>}
       />
       {showAdd && <AddUnitsForm onAdded={() => { setShowAdd(false); reload(); }} />}
@@ -51,7 +53,8 @@ export default function InventoryPage() {
               </tr></thead>
               <tbody>
                 {units.map((u) => (
-                  <tr key={u.id}>
+                  <Fragment key={u.id}>
+                  <tr>
                     <td className="td font-mono text-xs">{u.unit_code}<div className="text-slate-400">{u.lot_number}</div></td>
                     <td className="td font-bold">{u.blood_group}</td>
                     <td className="td">{productLabel(u.product_type)}</td>
@@ -72,8 +75,17 @@ export default function InventoryPage() {
                           <option value="discarded">discarded</option>
                         </select>
                       ) : <span className="text-xs text-slate-400">Locked</span>}
+                      {['available', 'expired', 'discarded'].includes(u.status) && (
+                        <button type="button" className="ml-2 text-xs font-semibold text-brand-cobalt" onClick={() => setEditing(editing === u.id ? null : u.id)}>Correct</button>
+                      )}
                     </td>
                   </tr>
+                  {editing === u.id && (
+                    <tr><td colSpan={7} className="td">
+                      <CorrectUnitForm unit={u} onCancel={() => setEditing(null)} onDone={() => { setEditing(null); reload(); }} />
+                    </td></tr>
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

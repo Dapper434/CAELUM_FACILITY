@@ -24,3 +24,18 @@ describe('appendPage', () => {
     expect(merged.map((e) => e.seq)).toEqual([9, 7, 6, 5]);
   });
 });
+
+import { toCorrectionPayload } from '../components/CorrectUnitForm';
+
+describe('correction payload', () => {
+  const unit = { lot_number: 'L1', expiry_date: null, storage_temp_c: 4 };
+  it('sends only changed fields with the reason', () => {
+    expect(toCorrectionPayload(unit, { lot_number: 'L2', expiry_date: '', storage_temp_c: 4, reason: ' typo ' }))
+      .toEqual({ lot_number: 'L2', reason: 'typo' });
+    expect(toCorrectionPayload(unit, { lot_number: 'L1', expiry_date: '', storage_temp_c: '', reason: 'probe' }))
+      .toEqual({ storage_temp_c: null, reason: 'probe' });
+  });
+  it('returns null when nothing changed', () => {
+    expect(toCorrectionPayload(unit, { lot_number: 'L1', expiry_date: '', storage_temp_c: '4', reason: 'x' })).toBeNull();
+  });
+});
