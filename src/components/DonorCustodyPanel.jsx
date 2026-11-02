@@ -66,19 +66,39 @@ function AssignCourier({ transfer, onDone }) {
   );
 }
 
-function QrDisplay({ transfer }) {
+export const QR_REFRESH_STAGES = ['packed', 'courier_assigned'];
+
+export function QrDisplay({ transfer }) {
   const qr = useAsync(() => transfersApi.qr(transfer.id), [transfer.id, transfer.seal_number]);
+  const regen = useAction();
+  const canRefresh = QR_REFRESH_STAGES.includes(transfer.stage);
+
+  async function regenerate() {
+    const fresh = await regen.run(() => transfersApi.qr(transfer.id, { refresh: true }));
+    if (fresh) qr.setData(fresh);
+  }
+
   if (qr.loading) return <Loading label="Loading QR…" />;
-  if (qr.error) return <ErrorBanner error={qr.error} />;
+  if (qr.error && !qr.data) return <ErrorBanner error={qr.error} />;
+  const d = qr.data;
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <div className={`bg-white p-3 rounded-xl border border-border-warm ${qr.data.expired ? 'opacity-30' : ''}`}><QRCodeSVG value={qr.data.qr_payload} size={168} /></div>
-      <div className="text-sm">
+      <div className={`bg-white p-3 rounded-xl border border-border-warm ${d.expired ? 'opacity-30' : ''}`}>
+        <QRCodeSVG value={d.qr_payload} size={168} data-testid="qr" />
+      </div>
+      <div className="text-sm space-y-1">
         <div className="label">Seal number</div>
-        <div className="font-mono text-lg font-bold">{qr.data.seal_number}</div>
-        {qr.data.expired
-          ? <p role="alert" className="text-xs font-bold text-status-crimson mt-2 max-w-xs">This QR expired {formatDateTime(qr.data.expires_at)}. Pickup will be rejected; contact the CAELUM admin.</p>
-          : <p className="text-xs text-slate-500 mt-2 max-w-xs">Valid until {formatDateTime(qr.data.expires_at)} · <Countdown until={qr.data.expires_at} label="" /><br />The courier scans this code at pickup and types the seal number.</p>}
+        <div className="font-mono text-lg font-bold">{d.seal_number}</div>
+        <div className="text-xs text-slate-600" data-testid="qr-expiry">
+          {d.expired ? <span className="font-bold text-status-crimson">Expired {formatDateTime(d.expires_at)}</span>
+            : <>Valid until {formatDateTime(d.expires_at)} · <Countdown until={d.expires_at} label="" /></>}
+          {d.reissued && <span className="ml-2 text-[11px] text-slate-400">reissued</span>}
+        </div>
+        <ErrorBanner error={regen.error} />
+        {canRefresh && (
+          <Button variant="ghost" busy={regen.busy} onClick={regenerate}>Regenerate QR</Button>
+        )}
+        <p className="text-xs text-slate-500 max-w-xs">The courier scans this code at pickup and types the seal number. After regenerating, only the newest code works.</p>
       </div>
     </div>
   );
