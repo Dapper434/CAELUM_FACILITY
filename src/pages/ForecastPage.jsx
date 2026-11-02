@@ -1,0 +1,92 @@
+import React, { useState } from 'react';
+import { forecastApi } from '../api/forecast';
+import { requestsApi } from '../api/requests';
+import { useAsync } from '../hooks/useAsync';
+import { useAction } from '../hooks/useAction';
+import { Button, Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui';
+import StatusBadge from '../components/StatusBadge';
+import BloodFilters from '../components/BloodFilters';
+import SuggestedRequestCard from '../components/SuggestedRequestCard';
+import { formatDateTime } from '../utils/format';
+
+function DemandBars({ days }) {
+  const max = Math.max(1, ...days.map((d) => d.units));
+  return (
+    <div className="flex items-end gap-2 h-32 mt-3">
+      {days.map((d) => (
+        <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
+          <span className="text-[10px] font-mono text-slate-500">{d.units.toFixed(1)}</span>
+          <div className="w-full bg-brand-cobalt/80 rounded-t" style={{ height: `${(d.units / max) * 90}%` }} />
+          <span className="text-[10px] text-slate-500">{d.date.slice(5)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function ForecastPage() {
+  const [filters, setFilters] = useState({ blood_group: 'O-', product_type: 'packed_rbc' });
+  const forecast = useAsync(() => forecastApi.get(filters), [filters.blood_group, filters.product_type]);
+  const alerts = useAsync(() => forecastApi.alerts(), []);
+  const suggested = useAsync(() => requestsApi.list('suggested'), []);
+  const runAction = useAction();
+
+  async function runForecast() {
+    if (await runAction.run(() => forecastApi.run())) { alerts.reload(); suggested.reload(); forecast.reload(); }
+  }
+
+  const f = forecast.data;
+  const insufficient = forecast.error?.code === 'insufficient_history';
+  return (
+    <div className="space-y-4">
+      <PageHeader title="Forecast & alerts" subtitle="Demand forecast, shortage alerts and suggested requests"
+        actions={<Button busy={runAction.busy} onClick={runForecast}>Run forecast</Button>} />
+      <ErrorBanner error={runAction.error} />
+      <div className="grid lg:grid-cols-2 gap-4">
+        <Card title="7-day demand forecast">
+          <BloodFilters value={filters} onChange={setFilters} />
+          {forecast.loading ? <Loading /> : insufficient ? <Empty>Not enough demand history (needs 14 days).</Empty> : (
+            <>
+              <ErrorBanner error={forecast.error} />
+              {f && (
+                <>
+                  <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+                    <div className="rounded-xl bg-bg-inset p-2"><div className="label">On hand</div><div className="text-lg font-bold">{f.units_on_hand}</div></div>
+                    <div className="rounded-xl bg-bg-inset p-2"><div className="label">Days cover</div><div className={`text-lg font-bold ${f.days_of_cover < 3 ? 'text-status-crimson' : ''}`}>{f.days_of_cover}</div></div>
+                    <div className="rounded-xl bg-bg-inset p-2"><div className="label">Avg / day</div><div className="text-lg font-bold">{f.average_daily_demand}</div></div>
+                  </div>
+                  <DemandBars days={f.daily_demand || []} />
+                  <p className="text-[11px] text-slate-400 mt-2">Method: {f.method} · {f.history_points} history points</p>
+                </>
+              )}
+            </>
+          )}
+        </Card>
+        <Card title="Open shortage alerts">
+          <ErrorBanner error={alerts.error} />
+          {alerts.loading ? <Loading /> : (alerts.data || []).length === 0 ? <Empty>No open alerts.</Empty> : (
+            <ul className="space-y-2">
+              {alerts.data.map((a) => (
+                <li key={a.id} className="flex items-center justify-between rounded-xl bg-bg-inset border border-border-warm px-3 py-2">
+                  <div>
+                    <div className="text-sm font-bold">{a.blood_group} · {a.units_remaining} units · {a.days_of_cover} days</div>
+                    <div className="text-xs text-slate-500">Depletes {formatDateTime(a.depletion_at)}</div>
+                  </div>
+                  <StatusBadge value={a.urgency} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+      <Card title="Forecast-suggested requests">
+        <ErrorBanner error={suggested.error} />
+        {suggested.loading ? <Loading /> : (suggested.data || []).length === 0 ? <Empty>No suggestions waiting.</Empty> : (
+          <div className="grid md:grid-cols-2 gap-3">
+            {suggested.data.map((r) => <SuggestedRequestCard key={r.id} request={r} onChange={suggested.reload} />)}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
