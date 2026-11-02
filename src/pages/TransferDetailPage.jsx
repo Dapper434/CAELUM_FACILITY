@@ -15,6 +15,7 @@ import CustodyEvents from '../components/CustodyEvents';
 import AuditTrail from '../components/AuditTrail';
 import { formatEta } from '../utils/format';
 import { productLabel } from '../utils/constants';
+import { transferRole } from '../utils/roles';
 
 const LIVE = ['courier_assigned', 'in_transit', 'arrived'];
 
@@ -33,7 +34,7 @@ export default function TransferDetailPage() {
   if (t.loading) return <Loading />;
   if (!t.data) return <ErrorBanner error={t.error} />;
   const tr = t.data;
-  const isDonor = facilityId && tr.donor_facility_id === facilityId;
+  const role = transferRole(tr, facilityId);
   const refresh = () => { t.reload(); custody.reload(); audit.reload(); };
   async function cancel() { if (await action.run(() => transfersApi.cancel(id, 'Cancelled by facility'))) refresh(); }
   const eta = tracking.data?.eta;
@@ -42,8 +43,8 @@ export default function TransferDetailPage() {
     <div className="space-y-4">
       <PageHeader
         title={`${tr.transfer_code} · ${tr.quantity} × ${tr.blood_group}`}
-        subtitle={`${productLabel(tr.product_type)} · manifest ${tr.manifest_code} · you are the ${isDonor ? 'donor' : 'recipient'}`}
-        actions={['accepted', 'packed', 'courier_assigned'].includes(tr.stage) && <Button variant="danger" busy={action.busy} onClick={cancel}>Cancel transfer</Button>}
+        subtitle={`${productLabel(tr.product_type)} · manifest ${tr.manifest_code} · ${role ? `you are the ${role}` : 'role unknown'}`}
+        actions={role && ['accepted', 'packed', 'courier_assigned'].includes(tr.stage) && <Button variant="danger" busy={action.busy} onClick={cancel}>Cancel transfer</Button>}
       />
       <ErrorBanner error={action.error || t.error} />
       <Card title="Timeline" actions={<StatusBadge value={tr.stage} />}><StageTimeline transfer={tr} /></Card>
@@ -61,11 +62,9 @@ export default function TransferDetailPage() {
           <TemperaturePanel readings={temps.data} productType={tr.product_type} excursion={tr.temperature_excursion} />
         </Card>
       </div>
-      <Card title={isDonor ? 'Pack & dispatch' : 'Custody handover'}>
-        {isDonor
-          ? <DonorCustodyPanel transfer={tr} onChange={refresh} />
-          : <RecipientCustodyPanel transfer={tr} onChange={refresh} />}
-      </Card>
+      {role === 'donor' && <Card title="Pack & dispatch"><DonorCustodyPanel transfer={tr} onChange={refresh} /></Card>}
+      {role === 'recipient' && <Card title="Custody handover"><RecipientCustodyPanel transfer={tr} onChange={refresh} /></Card>}
+      {!role && <ErrorBanner error={{ message: 'Your facility could not be matched to this transfer, so custody actions are hidden.' }} />}
       {(tr.units || []).length > 0 && (
         <Card title="Units">
           <div className="flex flex-wrap gap-2">{tr.units.map((u) => <span key={u.id} className="font-mono text-xs bg-bg-inset border border-border-warm rounded px-2 py-1">{u.unit_code} <StatusBadge value={u.status} /></span>)}</div>

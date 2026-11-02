@@ -5,7 +5,8 @@ import { useAsync } from '../hooks/useAsync';
 import { useAuth } from '../context/AuthContext';
 import { Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui';
 import StatusBadge from '../components/StatusBadge';
-import { formatDateTime, formatTemp } from '../utils/format';
+import { formatDateTime, formatTemp, humanize } from '../utils/format';
+import { transferRole } from '../utils/roles';
 
 export default function TransfersPage() {
   const [activeOnly, setActiveOnly] = useState(true);
@@ -26,7 +27,7 @@ export default function TransfersPage() {
               {data.map((t) => (
                 <tr key={t.id}>
                   <td className="td font-mono text-xs"><Link className="text-brand-cobalt font-semibold" to={`/transfers/${t.id}`}>{t.transfer_code}</Link></td>
-                  <td className="td">{t.donor_facility_id === facilityId ? 'Donor' : 'Recipient'}</td>
+                  <td className="td">{humanize(transferRole(t, facilityId)) || 'Unknown'}</td>
                   <td className="td font-bold">{t.quantity} × {t.blood_group}</td>
                   <td className="td"><StatusBadge value={t.stage} /></td>
                   <td className={`td ${t.temperature_excursion ? 'text-status-crimson font-bold' : ''}`}>{formatTemp(t.temperature_c)}</td>
