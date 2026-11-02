@@ -2,7 +2,7 @@
 
 Hospital app for the CAELUM blood-transfer network. One app serves both sides of a transfer:
 a facility is the **recipient** when it raises a request and the **donor** when it answers an offer.
-All data goes through the shared CAELUM API (contract v1.1.0, `/api/v1`); sign-in uses Supabase Auth.
+All data goes through the shared CAELUM API (contract v1.2.0, `/api/v1`); sign-in uses Supabase Auth.
 
 ## Features
 
@@ -18,6 +18,7 @@ All data goes through the shared CAELUM API (contract v1.1.0, `/api/v1`); sign-i
 | Donor offers | `/offers` | Incoming offers: hold / extend hold, accept, decline with reason, countdown to expiry. Outgoing offers for reference. |
 | Transfers | `/transfers` | Active or all transfers where the facility is a party. |
 | Transfer detail | `/transfers/:id` | Stage timeline, Leaflet + OpenStreetMap tracking (courier position, route, ETA), temperature readings with excursions, custody panel, custody events and audit trail. |
+| Settings | `/settings` | Facility contact name, phone and address (`PATCH /facilities/{id}`, audited). |
 | Audit trail | `/audit` | Hash-chained audit entries for all of this facility's transfers. |
 
 Custody panel:

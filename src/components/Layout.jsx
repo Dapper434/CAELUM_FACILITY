@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import {
-  LayoutDashboard, Droplets, Search, TrendingUp, ClipboardList, Inbox, Truck, ShieldCheck, LogOut,
+  LayoutDashboard, Droplets, Search, TrendingUp, ClipboardList, Inbox, Truck, ShieldCheck, Settings, LogOut,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ErrorBanner } from './ui';
@@ -15,6 +15,7 @@ export const NAV_ITEMS = [
   { to: '/offers', label: 'Donor offers', icon: Inbox },
   { to: '/transfers', label: 'Transfers', icon: Truck },
   { to: '/audit', label: 'Audit trail', icon: ShieldCheck },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Layout() {
