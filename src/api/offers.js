@@ -1,7 +1,7 @@
 import { http } from '../lib/apiClient';
 
 export const offersApi = {
-  list: (direction, status) => http.get('/offers', { direction, status }),
+  list: (direction, status, requestId) => http.get('/offers', { direction, status, request_id: requestId }),
   get: (id) => http.get(`/offers/${id}`),
   hold: (id) => http.post(`/offers/${id}/hold`, {}),
   accept: (id) => http.post(`/offers/${id}/accept`, {}),

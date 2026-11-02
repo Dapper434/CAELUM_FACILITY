@@ -18,7 +18,7 @@ export default function RequestDetailPage() {
   const req = useAsync(() => requestsApi.get(id), [id], { interval: 15000 });
   const r = req.data;
   const cands = useAsync(() => (r && r.status === 'open' ? requestsApi.candidates(id) : Promise.resolve(null)), [id, r?.status]);
-  const offers = useAsync(async () => (await offersApi.list('outgoing')).filter((o) => o.request_id === id), [id, r?.status], { interval: 15000 });
+  const offers = useAsync(() => offersApi.list('outgoing', undefined, id), [id, r?.status], { interval: 15000 });
   const action = useAction();
 
   async function sendOffer(c) {
