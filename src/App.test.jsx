@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router';
 
 const auth = { session: null, loading: false, me: null, facility: null, facilityId: null, error: null, signOut: vi.fn(), signIn: vi.fn(), configured: true };
 vi.mock('./context/AuthContext', () => ({ useAuth: () => auth, AuthProvider: ({ children }) => children }));
+vi.mock('./lib/supabase', () => ({ supabase: { auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }), updateUser: async () => ({}) } } }));
 vi.mock('./components/TrackingMap', () => ({ default: () => <div data-testid="map" /> }));
 
 const transfer = {
@@ -46,5 +47,17 @@ describe('routing', () => {
   it('shows the 404 page for unknown paths', () => {
     at('/no/such/page');
     expect(screen.getByText('Page not found')).toBeInTheDocument();
+  });
+
+  it('keeps /reset-password public for signed-out visitors', () => {
+    auth.session = null;
+    at('/reset-password');
+    expect(screen.getByText('Set your password')).toBeInTheDocument();
+    expect(screen.queryByText('Sign in with your hospital account')).toBeNull();
+  });
+
+  it('lets a signed-in user stay on /reset-password', () => {
+    at('/reset-password');
+    expect(screen.getByText('Set your password')).toBeInTheDocument();
   });
 });
