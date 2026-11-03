@@ -1,7 +1,26 @@
 import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { Button, ErrorBanner } from '../components/ui';
+
+export const RESET_SENT = 'If that email exists, we sent a link to reset the password.';
+
+/** Sends the reset link. Resolves to a neutral message; throws only when the server can't be reached. */
+export async function requestPasswordReset(email) {
+  if (!supabase) throw new Error('Supabase sign-in is not configured.');
+  let res;
+  try {
+    res = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
+  } catch {
+    throw new Error('Could not reach the sign-in service. Check your connection and try again.');
+  }
+  const err = res?.error;
+  if (err && (err.name === 'AuthRetryableFetchError' || err.status === 0)) {
+    throw new Error('Could not reach the sign-in service. Check your connection and try again.');
+  }
+  return RESET_SENT;
+}
 
 export default function LoginPage() {
   const { session, signIn, configured } = useAuth();
@@ -11,6 +30,8 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const [forgot, setForgot] = useState(() => new URLSearchParams(location.search).get('forgot') === '1');
+  const [resetMsg, setResetMsg] = useState(null);
 
   if (session) return <Navigate to={location.state?.from || '/'} replace />;
 
@@ -19,6 +40,10 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     try {
+      if (forgot) {
+        setResetMsg(await requestPasswordReset(email));
+        return;
+      }
       await signIn(email, password);
       navigate(location.state?.from || '/', { replace: true });
     } catch (err) {
@@ -44,11 +69,19 @@ export default function LoginPage() {
           <label className="label" htmlFor="email">Email</label>
           <input id="email" type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
         </div>
-        <div>
-          <label className="label" htmlFor="password">Password</label>
-          <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
-        </div>
-        {configured && <Button type="submit" busy={busy} className="w-full">Sign in</Button>}
+        {!forgot && (
+          <div>
+            <label className="label" htmlFor="password">Password</label>
+            <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+          </div>
+        )}
+        {resetMsg && <p role="status" className="text-sm text-slate-600">{resetMsg}</p>}
+        {configured && <Button type="submit" busy={busy} className="w-full">{forgot ? 'Send reset link' : 'Sign in'}</Button>}
+        {configured && (
+          <button type="button" className="text-xs font-semibold text-brand-cobalt" onClick={() => { setForgot(!forgot); setResetMsg(null); setError(null); }}>
+            {forgot ? 'Back to sign in' : 'Forgot password?'}
+          </button>
+        )}
       </form>
     </div>
   );
