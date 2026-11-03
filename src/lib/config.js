@@ -1,4 +1,12 @@
-const DEV_API_BASE_URL = 'http://localhost:5000/api/v1';
+const DEV_API_BASE_URL = 'http://localhost:5000';
+const API_PREFIX = '/api/v1';
+
+/** Accepts the API origin with or without /api/v1 and always returns it with the prefix once. */
+export function normalizeApiBase(raw) {
+  const base = String(raw || '').trim().replace(/\/+$/, '');
+  if (!base) return '';
+  return base.endsWith(API_PREFIX) ? base : base + API_PREFIX;
+}
 
 /** Reads Vite env into app config and lists anything missing. */
 export function resolveConfig(env) {
@@ -9,20 +17,19 @@ export function resolveConfig(env) {
     else errors.push('VITE_API_BASE_URL is not set.');
   }
   const supabaseUrl = String(env.VITE_SUPABASE_URL || '').trim();
-  const supabaseAnonKey = String(env.VITE_SUPABASE_ANON_KEY || '').trim();
-  const demoMode = env.VITE_DEMO_MODE === 'true';
-  if (!demoMode && (!supabaseUrl || !supabaseAnonKey)) {
-    errors.push('VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must both be set (or enable VITE_DEMO_MODE for a local memory-store API).');
+  // VITE_SUPABASE_ANON_KEY is the legacy name, still accepted.
+  const supabaseKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim();
+  if (!supabaseUrl || !supabaseKey) {
+    errors.push('VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY must both be set.');
   }
   return {
-    apiBaseUrl: apiBaseUrl.replace(/\/+$/, ''),
+    apiBaseUrl: normalizeApiBase(apiBaseUrl),
     supabaseUrl,
-    supabaseAnonKey,
-    demoMode,
+    supabaseKey,
     timeZone: 'Africa/Nairobi',
     errors,
   };
 }
 
 export const config = resolveConfig(import.meta.env);
-export const isSupabaseConfigured = Boolean(config.supabaseUrl && config.supabaseAnonKey);
+export const isSupabaseConfigured = Boolean(config.supabaseUrl && config.supabaseKey);
