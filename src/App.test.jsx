@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
-const auth = { session: null, loading: false, me: null, facility: null, facilityId: null, error: null, signOut: vi.fn(), signIn: vi.fn(), configured: true, demoMode: false };
+const auth = { session: null, loading: false, me: null, facility: null, facilityId: null, error: null, signOut: vi.fn(), signIn: vi.fn(), configured: true };
 vi.mock('./context/AuthContext', () => ({ useAuth: () => auth, AuthProvider: ({ children }) => children }));
 vi.mock('./components/TrackingMap', () => ({ default: () => <div data-testid="map" /> }));
 
@@ -25,7 +25,7 @@ import App from './App';
 const at = (path) => render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
 
 describe('routing', () => {
-  beforeEach(() => { auth.session = { demo: true }; auth.facilityId = 'f1'; auth.me = { role: 'facility' }; });
+  beforeEach(() => { auth.session = { access_token: 'test' }; auth.facilityId = 'f1'; auth.me = { role: 'facility' }; });
 
   it('redirects unauthenticated visits to /login', () => {
     auth.session = null;

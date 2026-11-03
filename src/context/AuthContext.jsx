@@ -1,9 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { config } from '../lib/config';
-import { clearDemoSession, getDemoToken, setDemoSession } from '../lib/demoSession';
 import { meApi } from '../api/me';
-import { authApi } from '../api/auth';
 
 const AuthContext = createContext(null);
 
@@ -27,8 +24,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let active = true;
     async function init() {
-      let s = getDemoToken() ? { demo: true } : null;
-      if (!s && supabase) s = (await supabase.auth.getSession()).data.session;
+      const s = supabase ? (await supabase.auth.getSession()).data.session : null;
       if (!active) return;
       setSession(s);
       await loadMe(s);
@@ -36,7 +32,6 @@ export function AuthProvider({ children }) {
     }
     init();
     const sub = supabase?.auth.onAuthStateChange((_event, s) => {
-      if (getDemoToken()) return;
       setSession(s);
       loadMe(s);
     });
@@ -49,30 +44,20 @@ export function AuthProvider({ children }) {
     if (err) throw err;
   }, []);
 
-  const signInDemo = useCallback(async (login) => {
-    const res = await authApi.demoLogin(login);
-    setDemoSession(res);
-    const s = { demo: true };
-    setSession(s);
-    await loadMe(s);
-  }, [loadMe]);
-
   const signOut = useCallback(async () => {
-    clearDemoSession();
     if (supabase) await supabase.auth.signOut();
     setSession(null);
     setMe(null);
   }, []);
 
   const value = useMemo(() => ({
-    session, me, loading, error, signIn, signInDemo, signOut,
+    session, me, loading, error, signIn, signOut,
     configured: isSupabaseConfigured,
-    demoMode: config.demoMode,
     facility: me?.facility || null,
     facilityId: me?.facility_id || null,
     isFacility: me?.role === 'facility',
     reload: () => loadMe(session),
-  }), [session, me, loading, error, signIn, signInDemo, signOut, loadMe]);
+  }), [session, me, loading, error, signIn, signOut, loadMe]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

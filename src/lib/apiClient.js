@@ -1,11 +1,9 @@
 import { config } from './config';
 import { createHttpClient } from './http';
 import { getAccessToken, supabase } from './supabase';
-import { clearDemoSession } from './demoSession';
 
 /** Expired or invalid token: drop the session and go to sign-in. */
 export async function handleUnauthorized() {
-  clearDemoSession();
   if (supabase) await supabase.auth.signOut();
   if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
     window.location.assign('/login');

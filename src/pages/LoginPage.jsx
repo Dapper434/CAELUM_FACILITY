@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { Button, ErrorBanner } from '../components/ui';
-import DemoLogin from '../components/DemoLogin';
 
 export default function LoginPage() {
-  const { session, signIn, configured, demoMode } = useAuth();
+  const { session, signIn, configured } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -50,7 +49,6 @@ export default function LoginPage() {
           <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
         </div>
         {configured && <Button type="submit" busy={busy} className="w-full">Sign in</Button>}
-        {demoMode && <DemoLogin onDone={() => navigate(location.state?.from || '/', { replace: true })} />}
       </form>
     </div>
   );
