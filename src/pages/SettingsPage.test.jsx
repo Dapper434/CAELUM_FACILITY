@@ -5,8 +5,10 @@ import { toContactPayload, validateContact } from '../utils/contact';
 
 vi.mock('../context/AuthContext', () => ({ useAuth: () => ({ facilityId: 'f1' }) }));
 vi.mock('../api/facilities', () => ({ facilitiesApi: { get: vi.fn(), updateContact: vi.fn() } }));
+const supaAuth = vi.hoisted(() => ({ updateUser: vi.fn() }));
+vi.mock('../lib/supabase', () => ({ supabase: { auth: supaAuth } }));
 import { facilitiesApi } from '../api/facilities';
-import SettingsPage from './SettingsPage';
+import SettingsPage, { ChangePasswordCard } from './SettingsPage';
 
 const facility = { id: 'f1', name: 'Mama Lucy', contact_name: 'Officer', contact_phone: null, address: null };
 
@@ -51,5 +53,30 @@ describe('SettingsPage', () => {
     fireEvent.change(screen.getByLabelText('Contact name'), { target: { value: 'New' } });
     fireEvent.click(screen.getByText('Save contact details'));
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('validation_error'));
+  });
+});
+
+describe('ChangePasswordCard', () => {
+  it('validates, then updates the password', async () => {
+    supaAuth.updateUser.mockResolvedValue({ data: {}, error: null });
+    render(<ChangePasswordCard />);
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'abc' } });
+    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'abc' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    expect(screen.getByText(/at least 8/)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'newpassword1' } });
+    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'newpassword1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    expect(await screen.findByText('Password updated.')).toBeInTheDocument();
+    expect(supaAuth.updateUser).toHaveBeenCalledWith({ password: 'newpassword1' });
+  });
+
+  it('shows Supabase errors', async () => {
+    supaAuth.updateUser.mockResolvedValue({ data: null, error: { message: 'New password should be different' } });
+    render(<ChangePasswordCard />);
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'newpassword1' } });
+    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'newpassword1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('should be different');
   });
 });

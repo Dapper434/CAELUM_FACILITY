@@ -6,12 +6,31 @@ import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
 import { Button, Card, ErrorBanner, Loading, PageHeader } from '../components/ui';
 import { toContactPayload, validateContact } from '../utils/contact';
+import { supabase } from '../lib/supabase';
+import PasswordForm from '../components/PasswordForm';
 
 const FIELDS = [
   { key: 'contact_name', label: 'Contact name', placeholder: 'Blood Bank Officer on duty' },
   { key: 'contact_phone', label: 'Contact phone', placeholder: '+254 700 000 000' },
   { key: 'address', label: 'Address', placeholder: 'Street, building, county', multiline: true },
 ];
+
+export function ChangePasswordCard() {
+  const [saved, setSaved] = useState(false);
+  async function save(password) {
+    setSaved(false);
+    if (!supabase) throw new Error('Supabase sign-in is not configured.');
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+    setSaved(true);
+  }
+  return (
+    <Card title="Change password" className="max-w-xl">
+      {saved && <p role="status" className="text-sm text-status-emerald mb-2">Password updated.</p>}
+      <PasswordForm onSubmit={save} submitLabel="Change password" />
+    </Card>
+  );
+}
 
 export default function SettingsPage() {
   const { facilityId } = useAuth();
@@ -61,6 +80,7 @@ export default function SettingsPage() {
           </form>
         )}
       </Card>
+      <ChangePasswordCard />
     </div>
   );
 }
