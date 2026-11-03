@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router';
 
 const auth = { session: null, loading: false, me: null, facility: null, facilityId: null, error: null, signOut: vi.fn(), signIn: vi.fn(), configured: true };
 vi.mock('./context/AuthContext', () => ({ useAuth: () => auth, AuthProvider: ({ children }) => children }));
-vi.mock('./lib/supabase', () => ({ supabase: { auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }), updateUser: async () => ({}) } } }));
+vi.mock('./lib/supabase', () => ({ getAccessToken: async () => null, isSupabaseConfigured: true, supabase: { auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }), updateUser: async () => ({}) } } }));
 vi.mock('./components/TrackingMap', () => ({ default: () => <div data-testid="map" /> }));
 
 const transfer = {
