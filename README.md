@@ -73,7 +73,9 @@ src/
 
 ## Signing in
 
-Sign-in uses Supabase email and password (`signInWithPassword`); the app sends the Supabase access token as `Authorization: Bearer …` to the API. The old `/auth/demo-login` path is gone. Demo facility accounts are `donor@caelum.demo` and `recipient@caelum.demo`; ask the API owner for their passwords (never commit them).
+Sign-in uses Supabase email and password (`signInWithPassword`); the app sends the Supabase access token as `Authorization: Bearer …` to the API. The old `/auth/demo-login` path is gone.
+
+Passwords: "Forgot password?" on /login emails a link to `/reset-password` (neutral message either way). Admin invite links land on the same page. Signed-in users can change their password under Settings. Supabase must list `<app origin>/reset-password` under Auth → URL Configuration → Redirect URLs. Demo facility accounts are `donor@caelum.demo` and `recipient@caelum.demo`; ask the API owner for their passwords (never commit them).
 
 ## Deploy (Vercel)
 
