@@ -4,17 +4,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: { port: 5173, host: true },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router'],
-          supabase: ['@supabase/supabase-js'],
-          map: ['leaflet', 'react-leaflet'],
-        },
-      },
-    },
-  },
+  // No manualChunks: splitting react/react-dom/react-router and react-leaflet into
+  // separate chunks created a circular import and a blank page in production.
   test: {
     environment: 'jsdom',
     globals: true,
