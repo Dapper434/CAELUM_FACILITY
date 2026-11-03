@@ -39,15 +39,14 @@ npm run dev            # http://localhost:5173
 
 | Variable | Purpose |
 |---|---|
-| `VITE_API_BASE_URL` | API base including `/api/v1`, e.g. `http://localhost:5000/api/v1` |
+| `VITE_API_BASE_URL` | API origin, e.g. `https://caelum-api.onrender.com`; `/api/v1` is appended if missing (a value already ending in `/api/v1` is used as is) |
 | `VITE_SUPABASE_URL` | Supabase project URL (same project as the admin console) |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
-| `VITE_DEMO_MODE` | `true` only for a local memory-store API: shows demo sign-in buttons |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (`sb_publishable_…`); the old `VITE_SUPABASE_ANON_KEY` name is still read as a fallback |
 
 The API must list the app origin in `CORS_ORIGINS` (5173 is in the default list).
 Users need `app_metadata.role = "facility"` and a `facility_id`.
 
-If `VITE_API_BASE_URL` is missing the app shows a configuration error screen; only `npm run dev` falls back to `http://localhost:5000/api/v1`.
+If `VITE_API_BASE_URL` is missing the app shows a configuration error screen; only `npm run dev` falls back to `http://localhost:5000/api/v1`. Missing Supabase values also show that screen.
 An expired or invalid token (API `401`) signs the user out and returns to `/login`.
 
 Scripts: `npm run dev`, `npm run build`, `npm run preview`, `npm test` (Vitest).
@@ -72,36 +71,17 @@ src/
 - **Roles:** on a transfer the app compares `donor_facility_id` with the signed-in facility to show the donor or recipient panel.
 - **Styling:** Tailwind with the admin console palette (warm canvas, cobalt, burgundy) and Plus Jakarta Sans.
 
-## Demo logins (memory store)
+## Signing in
 
-Run the API locally on the in-memory store; it seeds demo data and enables `POST /api/v1/auth/demo-login` (no password, never on Supabase):
-
-```bash
-cd ../API && STORE_BACKEND=memory python main.py        # port 5000
-```
-
-Set `VITE_DEMO_MODE=true` in `.env` and use the buttons on the sign-in page, or get a token by hand:
-
-```bash
-curl -s -X POST http://localhost:5000/api/v1/auth/demo-login \
-  -H 'Content-Type: application/json' -d '{"login":"recipient"}'
-```
-
-| login | Facility | Side |
-|---|---|---|
-| `recipient` (`recipient@caelum.demo`) | Mama Lucy Kibaki | recipient: in-transit transfer with seal `SEAL-DEMO-0001`, a pending offer |
-| `donor` (`donor@caelum.demo`) | Nairobi Hospital Hub | donor: answer the pending offer within 5 min of API start |
-
-The demo token is kept in `sessionStorage` for the tab. Restarting the API resets the demo.
+Sign-in uses Supabase email and password (`signInWithPassword`); the app sends the Supabase access token as `Authorization: Bearer …` to the API. The old `/auth/demo-login` path is gone. Demo facility accounts are `donor@caelum.demo` and `recipient@caelum.demo`; ask the API owner for their passwords (never commit them).
 
 ## Deploy (Vercel)
 
 1. Import the repo in Vercel; framework preset **Vite** (build `npm run build`, output `dist`).
 2. Set the environment variables for Production (and Preview):
-   - `VITE_API_BASE_URL` = public API URL ending in `/api/v1` (required; the build shows a config error screen without it)
-   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` = the shared Supabase project
-   - leave `VITE_DEMO_MODE` unset or `false`
+   - `VITE_API_BASE_URL` = `https://caelum-api.onrender.com` (required; `/api/v1` is added automatically)
+   - `VITE_SUPABASE_URL` = `https://qvqkxuaslayxvjgamtil.supabase.co`, `VITE_SUPABASE_PUBLISHABLE_KEY` = the project's publishable key
 3. `vercel.json` rewrites all paths to `index.html` so deep links like `/transfers/:id` work.
 4. Add the Vercel domain to the API's `CORS_ORIGINS`.
 
-`VITE_*` values are baked into the bundle at build time, so redeploy after changing them. Only the anon key belongs here, never a service-role key.
+`VITE_*` values are baked into the bundle at build time, so redeploy after changing them. Only the publishable key belongs here, never a service-role key.
