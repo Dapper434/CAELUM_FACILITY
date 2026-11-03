@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: { port: 5173, host: true },
-  // No manualChunks: splitting react/react-dom/react-router and react-leaflet into
+  // No custom chunk splitting: putting react/react-dom/react-router and react-leaflet into
   // separate chunks created a circular import and a blank page in production.
   test: {
     environment: 'jsdom',
