@@ -9,6 +9,13 @@ import BloodFilters from '../components/BloodFilters';
 import SuggestedRequestCard from '../components/SuggestedRequestCard';
 import { formatDateTime } from '../utils/format';
 
+export const DEFAULT_FORECAST_FILTERS = { blood_group: 'O-', product_type: 'packed_rbc' };
+
+/** 422 insufficient_history is an expected empty state, not a failure. */
+export function isInsufficientHistory(err) {
+  return Boolean(err) && err.status === 422 && err.code === 'insufficient_history';
+}
+
 /** Forecast history points → bar data. */
 export function toBars(history) {
   return (history || []).map((h) => ({ date: h.date, units: Number(h.units_issued) || 0 }));
@@ -30,7 +37,7 @@ function DemandBars({ days, compact }) {
 }
 
 export default function ForecastPage() {
-  const [filters, setFilters] = useState({ blood_group: 'O-', product_type: 'packed_rbc' });
+  const [filters, setFilters] = useState(DEFAULT_FORECAST_FILTERS);
   const forecast = useAsync(() => forecastApi.get(filters), [filters.blood_group, filters.product_type]);
   const history = useAsync(() => forecastApi.history({ ...filters, days: 28 }), [filters.blood_group, filters.product_type]);
   const alerts = useAsync(() => forecastApi.alerts(), []);
@@ -42,7 +49,8 @@ export default function ForecastPage() {
   }
 
   const f = forecast.data;
-  const insufficient = forecast.error?.code === 'insufficient_history';
+  const insufficient = isInsufficientHistory(forecast.error);
+  const historyInsufficient = isInsufficientHistory(history.error);
   return (
     <div className="space-y-4">
       <PageHeader title="Forecast & alerts" subtitle="Demand forecast, shortage alerts and suggested requests"
@@ -51,7 +59,7 @@ export default function ForecastPage() {
       <div className="grid lg:grid-cols-2 gap-4">
         <Card title="7-day demand forecast">
           <BloodFilters value={filters} onChange={setFilters} />
-          {forecast.loading ? <Loading /> : insufficient ? <Empty>Not enough demand history (needs 14 days).</Empty> : (
+          {forecast.loading ? <Loading /> : insufficient ? <Empty>Not enough history yet for this group.</Empty> : (
             <>
               <ErrorBanner error={forecast.error} />
               {f && (
@@ -86,8 +94,8 @@ export default function ForecastPage() {
         </Card>
       </div>
       <Card title="Demand history (last 28 days)">
-        <ErrorBanner error={history.error} />
-        {history.loading ? <Loading /> : history.data && (
+        {!historyInsufficient && <ErrorBanner error={history.error} />}
+        {history.loading ? <Loading /> : historyInsufficient ? <Empty>Not enough history yet for this group.</Empty> : history.data && (
           <>
             <p className="text-xs text-slate-500">
               {history.data.from} → {history.data.to} · {history.data.total_issued} units issued · avg {history.data.average_daily}/day · {history.data.days_with_data} days with data
