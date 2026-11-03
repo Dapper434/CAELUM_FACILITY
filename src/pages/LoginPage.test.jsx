@@ -33,7 +33,7 @@ describe('forgot password', () => {
   });
 
   it('reports network failures without the neutral message', async () => {
-    auth.resetPasswordForEmail.mockRejectedValue(new TypeError('Failed to fetch'));
+    auth.resetPasswordForEmail.mockResolvedValue({ data: null, error: { name: 'AuthRetryableFetchError', status: 0, message: 'Failed to fetch' } });
     openForgot();
     expect(await screen.findByRole('alert')).toHaveTextContent(/Could not reach/);
     expect(screen.queryByText(RESET_SENT)).toBeNull();
