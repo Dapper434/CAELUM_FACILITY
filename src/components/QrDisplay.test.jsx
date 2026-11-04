@@ -23,6 +23,13 @@ describe('QrDisplay', () => {
     expect(screen.getByText('reissued')).toBeInTheDocument();
   });
 
+  it('explains how the courier uses the code', async () => {
+    transfersApi.qr.mockResolvedValue(fresh);
+    render(<QrDisplay transfer={{ id: 't1', stage: 'packed', seal_number: 'SEAL-1' }} />);
+    await screen.findByTestId('qr-expiry');
+    expect(screen.getByText('Show this code to the courier at pickup. They scan it in the CAELUM Courier app (Start pickup, then Scan QR) and type the seal number. After regenerating, only the newest code works.')).toBeInTheDocument();
+  });
+
   it('hides Regenerate outside packed/courier_assigned', async () => {
     transfersApi.qr.mockResolvedValue(fresh);
     render(<QrDisplay transfer={{ id: 't1', stage: 'in_transit', seal_number: 'SEAL-1' }} />);
