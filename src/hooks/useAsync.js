@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Runs `fn` on mount / when deps change. With `interval` it polls, pausing while
- * the tab is hidden and refreshing once when it becomes visible again.
+ * the tab is hidden and refreshing once when it becomes visible again or the window regains focus.
  * No state updates after unmount.
  */
 export function useAsync(fn, deps = [], { interval } = {}) {
@@ -34,6 +34,7 @@ export function useAsync(fn, deps = [], { interval } = {}) {
     let timer = null;
     const start = () => { if (interval && !timer) timer = setInterval(run, interval); };
     const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+    const onFocus = () => { if (!document.hidden) run(); };
     const onVisibility = () => {
       if (document.hidden) stop();
       else { run(); start(); }
@@ -41,11 +42,13 @@ export function useAsync(fn, deps = [], { interval } = {}) {
     if (interval) {
       if (!document.hidden) start();
       document.addEventListener('visibilitychange', onVisibility);
+      window.addEventListener('focus', onFocus);
     }
     return () => {
       mounted.current = false;
       stop();
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onFocus);
     };
   }, [run, interval]);
 

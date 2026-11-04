@@ -7,11 +7,17 @@ import { Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui'
 import StatusBadge from '../components/StatusBadge';
 import { formatDateTime, formatTemp, humanize } from '../utils/format';
 import { transferRole } from '../utils/roles';
+import { courierStatusLabel, transferPollInterval } from '../utils/transferStatus';
 
 export default function TransfersPage() {
   const [activeOnly, setActiveOnly] = useState(true);
   const { facilityId } = useAuth();
-  const { data, error, loading } = useAsync(() => transfersApi.list(activeOnly ? { active: 'true' } : {}), [activeOnly], { interval: 20000 });
+  const [interval, setPoll] = useState(0);
+  const { data, error, loading } = useAsync(async () => {
+    const rows = await transfersApi.list(activeOnly ? { active: 'true' } : {});
+    setPoll(transferPollInterval(rows || [])); // poll only while a row is active
+    return rows;
+  }, [activeOnly], { interval });
   return (
     <div>
       <PageHeader title="Transfers" subtitle="Transfers where this facility is donor or recipient" />
@@ -29,7 +35,7 @@ export default function TransfersPage() {
                   <td className="td font-mono text-xs"><Link className="text-brand-cobalt font-semibold" to={`/transfers/${t.id}`}>{t.transfer_code}</Link></td>
                   <td className="td">{humanize(transferRole(t, facilityId)) || 'Unknown'}</td>
                   <td className="td font-bold">{t.quantity} × {t.blood_group}</td>
-                  <td className="td"><StatusBadge value={t.stage} /></td>
+                  <td className="td"><StatusBadge value={t.stage} />{courierStatusLabel(t) && <div className="text-[11px] text-slate-600 mt-0.5">{courierStatusLabel(t)}</div>}</td>
                   <td className={`td ${t.temperature_excursion ? 'text-status-crimson font-bold' : ''}`}>{formatTemp(t.temperature_c)}</td>
                   <td className="td">{formatDateTime(t.updated_at)}</td>
                 </tr>

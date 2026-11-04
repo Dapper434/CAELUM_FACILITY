@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router';
 import { transfersApi } from '../api/transfers';
 import { useAsync } from '../hooks/useAsync';
@@ -16,13 +16,19 @@ import AuditTrail from '../components/AuditTrail';
 import { formatEta } from '../utils/format';
 import { productLabel } from '../utils/constants';
 import { transferRole } from '../utils/roles';
+import { courierStatusLabel, transferPollInterval } from '../utils/transferStatus';
 
 const LIVE = ['courier_assigned', 'in_transit', 'arrived'];
 
 export default function TransferDetailPage() {
   const { id } = useParams();
   const { facilityId } = useAuth();
-  const t = useAsync(() => transfersApi.get(id), [id], { interval: 15000 });
+  const [interval, setPoll] = useState(0);
+  const t = useAsync(async () => {
+    const tr = await transfersApi.get(id);
+    setPoll(transferPollInterval(tr)); // stops once delivered/cancelled
+    return tr;
+  }, [id], { interval });
   const stage = t.data?.stage;
   const live = LIVE.includes(stage);
   const tracking = useAsync(() => transfersApi.tracking(id), [id, stage], { interval: live ? 10000 : 0 });
@@ -47,7 +53,7 @@ export default function TransferDetailPage() {
         actions={role && ['accepted', 'packed', 'courier_assigned'].includes(tr.stage) && <Button variant="danger" busy={action.busy} onClick={cancel}>Cancel transfer</Button>}
       />
       <ErrorBanner error={action.error || t.error} />
-      <Card title="Timeline" actions={<StatusBadge value={tr.stage} />}><StageTimeline transfer={tr} /></Card>
+      <Card title="Timeline" actions={<StatusBadge value={tr.stage} />}>{courierStatusLabel(tr) && <p className="text-sm font-semibold text-slate-700 mb-2" data-testid="courier-status">{courierStatusLabel(tr)}</p>}<StageTimeline transfer={tr} /></Card>
       <div className="grid lg:grid-cols-3 gap-4">
         <Card title="Live tracking" className="lg:col-span-2">
           <ErrorBanner error={tracking.error} />

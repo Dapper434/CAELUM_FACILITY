@@ -1,3 +1,4 @@
+import { courierAcceptedAt, courierStatusLabel } from '../utils/transferStatus';
 import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { transfersApi } from '../api/transfers';
@@ -98,7 +99,7 @@ export function QrDisplay({ transfer }) {
         {canRefresh && (
           <Button variant="ghost" busy={regen.busy} onClick={regenerate}>Regenerate QR</Button>
         )}
-        <p className="text-xs text-slate-500 max-w-xs">The courier scans this code at pickup and types the seal number. After regenerating, only the newest code works.</p>
+        <p className="text-xs text-slate-500 max-w-xs">Show this code to the courier at pickup. They scan it in the CAELUM Courier app (Start pickup, then Scan QR) and type the seal number. After regenerating, only the newest code works.</p>
       </div>
     </div>
   );
@@ -111,9 +112,9 @@ export default function DonorCustodyPanel({ transfer, onChange }) {
       {stage === 'accepted' && <PackForm transfer={transfer} onDone={onChange} />}
       {['packed', 'courier_assigned'].includes(stage) && <QrDisplay transfer={transfer} />}
       {stage === 'packed' && <AssignCourier transfer={transfer} onDone={onChange} />}
-      {stage === 'courier_assigned' && (
-        <p className="text-sm text-slate-600">Waiting for the courier to accept the job. <Countdown until={transfer.courier_accept_deadline} label="Courier must accept in" /></p>
-      )}
+      {stage === 'courier_assigned' && (courierAcceptedAt(transfer)
+        ? <p className="text-sm text-slate-600">{courierStatusLabel(transfer)}.</p>
+        : <p className="text-sm text-slate-600">{courierStatusLabel(transfer)}. <Countdown until={transfer.courier_accept_deadline} label="Courier must accept in" /></p>)}
       {['in_transit', 'arrived', 'delivered'].includes(stage) && <p className="text-sm text-slate-600">Picked up — seal {transfer.seal_number}, cooler {transfer.cooler_id}.</p>}
     </div>
   );

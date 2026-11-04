@@ -1,3 +1,4 @@
+import { courierStatusLabel } from '../utils/transferStatus';
 import React, { useState } from 'react';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { transfersApi } from '../api/transfers';
@@ -80,6 +81,7 @@ export default function RecipientCustodyPanel({ transfer, onChange }) {
       {transfer.received_confirmed_at && (
         <p className="text-sm text-status-emerald font-semibold">Receipt confirmed {formatDateTime(transfer.received_confirmed_at)} · {transfer.receipt_condition}</p>
       )}
+      {stage === 'courier_assigned' && <p className="text-sm text-slate-600">{courierStatusLabel(transfer)}.</p>}
       {stage === 'accepted' && <p className="text-sm text-slate-600">The donor is packing. The drop-off code appears once the cooler is sealed.</p>}
     </div>
   );
