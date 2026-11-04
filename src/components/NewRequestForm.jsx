@@ -3,6 +3,7 @@ import { requestsApi } from '../api/requests';
 import { useAction } from '../hooks/useAction';
 import { BLOOD_GROUPS, PRODUCTS, URGENCIES } from '../utils/constants';
 import { Button, Card, ErrorBanner } from './ui';
+import { isValidBloodGroup, PICK_BLOOD_GROUP } from '../utils/bloodGroup';
 
 export function toRequestPayload(form) {
   const body = {
@@ -18,12 +19,14 @@ export function toRequestPayload(form) {
 }
 
 export default function NewRequestForm({ onCreated }) {
-  const [form, setForm] = useState({ blood_group: 'O-', units_requested: 2, product_type: 'packed_rbc', urgency: 'urgent', reason: '', patient_ref: '', needed_by: '' });
+  const [form, setForm] = useState({ blood_group: '', units_requested: 2, product_type: 'packed_rbc', urgency: 'urgent', reason: '', patient_ref: '', needed_by: '' });
   const { busy, error, run } = useAction();
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const [groupError, setGroupError] = useState(null);
+  const set = (k) => (e) => { setForm({ ...form, [k]: e.target.value }); if (k === 'blood_group') setGroupError(null); };
 
   async function submit(e) {
     e.preventDefault();
+    if (!isValidBloodGroup(form.blood_group)) { setGroupError(PICK_BLOOD_GROUP); return; }
     const created = await run(() => requestsApi.create(toRequestPayload(form)));
     if (created) onCreated?.(created);
   }
@@ -33,7 +36,11 @@ export default function NewRequestForm({ onCreated }) {
       <ErrorBanner error={error} />
       <form onSubmit={submit} className="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
         <div><label className="label" htmlFor="nr-group">Blood group</label>
-          <select id="nr-group" className="input" value={form.blood_group} onChange={set('blood_group')}>{BLOOD_GROUPS.map((g) => <option key={g}>{g}</option>)}</select></div>
+          <select id="nr-group" className="input" value={form.blood_group} onChange={set('blood_group')} aria-invalid={Boolean(groupError)}>
+            <option value="">Select…</option>
+            {BLOOD_GROUPS.map((g) => <option key={g}>{g}</option>)}
+          </select>
+          {groupError && <p className="text-xs text-status-crimson mt-1">{groupError}</p>}</div>
         <div><label className="label" htmlFor="nr-units">Units</label>
           <input id="nr-units" type="number" min="1" className="input" value={form.units_requested} onChange={set('units_requested')} required /></div>
         <div><label className="label" htmlFor="nr-product">Product</label>
