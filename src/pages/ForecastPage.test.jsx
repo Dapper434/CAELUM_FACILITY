@@ -6,6 +6,7 @@ import { ApiError } from '../lib/http';
 
 const forecastApi = vi.hoisted(() => ({ get: vi.fn(), history: vi.fn(), run: vi.fn(), alerts: vi.fn() }));
 vi.mock('../api/forecast', () => ({ forecastApi }));
+vi.mock('../context/AuthContext', () => ({ useAuth: () => ({ facilityId: 'f1' }) }));
 vi.mock('../api/requests', () => ({ requestsApi: { list: vi.fn(async () => []) } }));
 import ForecastPage, { DEFAULT_FORECAST_FILTERS, isInsufficientHistory } from './ForecastPage';
 

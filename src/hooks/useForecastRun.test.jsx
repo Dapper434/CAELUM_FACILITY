@@ -7,6 +7,7 @@ import { ApiError } from '../lib/http';
 const forecastApi = vi.hoisted(() => ({ get: vi.fn(), history: vi.fn(), run: vi.fn(), getRun: vi.fn(), alerts: vi.fn() }));
 const requestsApi = vi.hoisted(() => ({ list: vi.fn() }));
 vi.mock('../api/forecast', () => ({ forecastApi }));
+vi.mock('../context/AuthContext', () => ({ useAuth: () => ({ facilityId: 'f1' }) }));
 vi.mock('../api/requests', () => ({ requestsApi }));
 import ForecastPage from '../pages/ForecastPage';
 import { RUN_POLL_MS } from './useForecastRun';
@@ -69,6 +70,26 @@ describe('Run forecast job', () => {
     await tick(); await tick();
     expect(forecastApi.getRun.mock.calls.length).toBe(calls);
     expect(sessionStorage.getItem('caelum.forecastRun')).toBeNull();
+  });
+
+  it('warns about result.errors on a succeeded run, alongside the refresh', async () => {
+    forecastApi.getRun.mockResolvedValue(job('running'));
+    await startWith(job('queued'));
+    const before = forecastApi.alerts.mock.calls.length;
+    forecastApi.getRun.mockResolvedValue(job('succeeded', { result: { suggested_requests: [], alerts: [], errors: [{ facility_id: 'f1', error: 'no demand_logs' }] } }));
+    await tick();
+    expect(screen.getByRole('status')).toHaveTextContent('This facility: no demand_logs');
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(forecastApi.alerts.mock.calls.length).toBeGreaterThan(before);
+  });
+
+  it.each([['missing', {}], ['null', { errors: null }], ['empty', { errors: [] }]])('shows no warning when result.errors is %s', async (_n, extra) => {
+    forecastApi.getRun.mockResolvedValue(job('running'));
+    await startWith(job('queued'));
+    forecastApi.getRun.mockResolvedValue(job('succeeded', { result: { suggested_requests: [], alerts: [], ...extra } }));
+    await tick();
+    expect(screen.queryByText(/could not be forecast/)).toBeNull();
+    expect(runButton()).not.toBeDisabled();
   });
 
   it('shows the error of a failed run', async () => {
