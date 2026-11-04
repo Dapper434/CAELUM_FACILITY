@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { forecastApi } from '../api/forecast';
 import { useAsync } from './useAsync';
+import { tabStorage } from '../lib/storage';
 
 export const RUN_POLL_MS = 3000;
 const KEY = 'caelum.forecastRun';
@@ -24,7 +25,7 @@ export function summaryText(s) {
   return `Forecast finished: ${s.facilities} facilities, ${s.series} series, ${s.shortages} shortages, ${s.alerts} alerts, ${s.suggested} suggested requests.`;
 }
 
-const savedId = () => { const v = sessionStorage.getItem(KEY); return v && v !== 'undefined' && v !== 'null' ? v : null; };
+const savedId = () => { const v = tabStorage().getItem(KEY); return v && v !== 'undefined' && v !== 'null' ? v : null; };
 
 /** Starts or resumes a forecast run job and polls it until it finishes. */
 export function useForecastRun({ onSucceeded } = {}) {
@@ -45,7 +46,7 @@ export function useForecastRun({ onSucceeded } = {}) {
   const job = jobId && jobIdOf(polled) === jobId ? polled : jobId && jobIdOf(started) === jobId ? started : null;
   const active = Boolean(jobId) && (!job || ACTIVE.includes(job.status));
 
-  const finish = () => { sessionStorage.removeItem(KEY); setJobId(null); };
+  const finish = () => { tabStorage().removeItem(KEY); setJobId(null); };
 
   useEffect(() => {
     const id = jobIdOf(job);
@@ -83,7 +84,7 @@ export function useForecastRun({ onSucceeded } = {}) {
       const id = jobIdOf(run);
       if (!id) throw new Error('The server did not return a forecast job id.');
       handled.current = null;
-      sessionStorage.setItem(KEY, id);
+      tabStorage().setItem(KEY, id);
       setStarted(run);
       setJobId(id);
     } catch (err) {

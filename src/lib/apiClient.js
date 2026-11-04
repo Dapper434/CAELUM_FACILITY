@@ -7,7 +7,7 @@ import { clearUserData, getLastUser, saveRedirect } from './session';
 export async function handleUnauthorized() {
   if (typeof window !== 'undefined') saveRedirect(getLastUser(), window.location.pathname);
   clearUserData({ keepRedirect: true });
-  if (supabase) await supabase.auth.signOut();
+  if (supabase) await supabase.auth.signOut({ scope: 'local' });
   if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
     window.location.assign('/login');
   }

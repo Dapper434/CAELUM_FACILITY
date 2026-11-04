@@ -74,7 +74,7 @@ export function AuthProvider({ children }) {
   const signOut = useCallback(async () => {
     clearUserData();
     userRef.current = null;
-    if (supabase) await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut({ scope: 'local' });
     setSession(null);
     setMe(null);
   }, []);
