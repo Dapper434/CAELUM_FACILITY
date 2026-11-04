@@ -30,10 +30,21 @@ describe('AuthProvider user changes', () => {
     show('/requests/r-recipient');
     await act(async () => {});
     localStorage.setItem('caelum.cache', 'recipient data');
+    h.session = { user: { id: 'donor' } };
     await act(async () => h.listener('SIGNED_IN', { user: { id: 'donor' } }));
     expect(screen.getByTestId('path')).toHaveTextContent(/^\/$/);
     expect(localStorage.getItem('caelum.cache')).toBeNull();
     expect(sessionStorage.getItem('caelum.lastUser')).toBe('donor');
+  });
+
+  it('does not re-run session setup on navigation', async () => {
+    const { meApi } = await import('../api/me');
+    meApi.get.mockClear();
+    show('/');
+    await act(async () => {});
+    expect(meApi.get).toHaveBeenCalledTimes(1);
+    await act(async () => h.listener('SIGNED_IN', { user: { id: 'other' } }));
+    expect(meApi.get).toHaveBeenCalledTimes(2);
   });
 
   it('clears app data on a SIGNED_OUT event but keeps Supabase keys', async () => {
