@@ -14,17 +14,19 @@ describe('session storage helpers', () => {
     saveRedirect('user-a', '/login');
     expect(redirectFor('user-a')).toBeNull();
   });
-  it('clears app keys but not Supabase auth keys', () => {
-    localStorage.setItem('caelum.prefs', '1');
-    localStorage.setItem('sb-qvq-auth-token', 'x');
+  it('clears only this tab\'s app keys, not Supabase auth keys or localStorage', () => {
+    sessionStorage.setItem('caelum.prefs', '1');
+    sessionStorage.setItem('sb-caelum-auth-t1', 'x');
+    localStorage.setItem('caelum.theme', 'dark');
     sessionStorage.setItem('caelum.lastUser', 'user-a');
     saveRedirect('user-a', '/transfers/t1');
     clearUserData({ keepRedirect: true });
     expect(redirectFor('user-a')).toBe('/transfers/t1');
     clearUserData();
-    expect(localStorage.getItem('caelum.prefs')).toBeNull();
+    expect(sessionStorage.getItem('caelum.prefs')).toBeNull();
+    expect(localStorage.getItem('caelum.theme')).toBe('dark');
     expect(sessionStorage.getItem('caelum.lastUser')).toBeNull();
     expect(redirectFor('user-a')).toBeNull();
-    expect(localStorage.getItem('sb-qvq-auth-token')).toBe('x');
+    expect(sessionStorage.getItem('sb-caelum-auth-t1')).toBe('x');
   });
 });

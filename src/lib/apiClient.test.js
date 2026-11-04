@@ -13,13 +13,13 @@ describe('401 redirect', () => {
     const assign = vi.fn();
     Object.defineProperty(window, 'location', { configurable: true, value: { pathname: '/transfers/t1', assign } });
     sessionStorage.setItem('caelum.lastUser', 'u1');
-    localStorage.setItem('caelum.cache', 'x');
+    sessionStorage.setItem('caelum.cache', 'x');
     const fetchImpl = vi.fn().mockResolvedValue({ ok: false, status: 401, text: async () => '{"error":{"code":"unauthorized"}}' });
     const http = createHttpClient({ baseUrl: 'x', fetchImpl, onUnauthorized: handleUnauthorized });
     await expect(http.get('/me')).rejects.toMatchObject({ status: 401 });
-    expect(signOut).toHaveBeenCalled();
+    expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
     expect(JSON.parse(sessionStorage.getItem('caelum.redirect'))).toEqual({ userId: 'u1', path: '/transfers/t1' });
-    expect(localStorage.getItem('caelum.cache')).toBeNull();
+    expect(sessionStorage.getItem('caelum.cache')).toBeNull();
     expect(assign).toHaveBeenCalledWith('/login');
   });
 

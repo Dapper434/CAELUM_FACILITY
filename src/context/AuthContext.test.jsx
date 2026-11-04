@@ -29,11 +29,11 @@ describe('AuthProvider user changes', () => {
   it('goes home and clears app data when another user signs in (e.g. from another tab)', async () => {
     show('/requests/r-recipient');
     await act(async () => {});
-    localStorage.setItem('caelum.cache', 'recipient data');
+    sessionStorage.setItem('caelum.cache', 'recipient data');
     h.session = { user: { id: 'donor' } };
     await act(async () => h.listener('SIGNED_IN', { user: { id: 'donor' } }));
     expect(screen.getByTestId('path')).toHaveTextContent(/^\/$/);
-    expect(localStorage.getItem('caelum.cache')).toBeNull();
+    expect(sessionStorage.getItem('caelum.cache')).toBeNull();
     expect(sessionStorage.getItem('caelum.lastUser')).toBe('donor');
   });
 
@@ -50,10 +50,10 @@ describe('AuthProvider user changes', () => {
   it('clears app data on a SIGNED_OUT event but keeps Supabase keys', async () => {
     show('/');
     await act(async () => {});
-    localStorage.setItem('caelum.cache', 'x');
+    sessionStorage.setItem('caelum.cache', 'x');
     localStorage.setItem('sb-qvq-auth-token', 'kept');
     await act(async () => h.listener('SIGNED_OUT', null));
-    expect(localStorage.getItem('caelum.cache')).toBeNull();
+    expect(sessionStorage.getItem('caelum.cache')).toBeNull();
     expect(localStorage.getItem('sb-qvq-auth-token')).toBe('kept');
   });
 
@@ -64,5 +64,19 @@ describe('AuthProvider user changes', () => {
     await act(async () => fireEvent.click(screen.getByText('out')));
     expect(sessionStorage.getItem('caelum.redirect')).toBeNull();
     expect(sessionStorage.getItem('caelum.lastUser')).toBeNull();
+  });
+
+  it('sign-out is local to this tab: local scope, other storage untouched', async () => {
+    const { supabase } = await import('../lib/supabase');
+    show('/');
+    await act(async () => {});
+    sessionStorage.setItem('caelum.forecastRun', 'j1');
+    localStorage.setItem('caelum.theme', 'dark');
+    localStorage.setItem('other-app', 'x');
+    await act(async () => fireEvent.click(screen.getByText('out')));
+    expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    expect(sessionStorage.getItem('caelum.forecastRun')).toBeNull();
+    expect(localStorage.getItem('caelum.theme')).toBe('dark');
+    expect(localStorage.getItem('other-app')).toBe('x');
   });
 });
