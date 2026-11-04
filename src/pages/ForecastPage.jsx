@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { forecastApi } from '../api/forecast';
 import { requestsApi } from '../api/requests';
 import { useAsync } from '../hooks/useAsync';
-import { useAction } from '../hooks/useAction';
+import { runLabel, useForecastRun } from '../hooks/useForecastRun';
+import { isValidBloodGroup } from '../utils/bloodGroup';
 import { Button, Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui';
 import StatusBadge from '../components/StatusBadge';
 import BloodFilters from '../components/BloodFilters';
@@ -38,15 +39,15 @@ function DemandBars({ days, compact }) {
 
 export default function ForecastPage() {
   const [filters, setFilters] = useState(DEFAULT_FORECAST_FILTERS);
-  const forecast = useAsync(() => forecastApi.get(filters), [filters.blood_group, filters.product_type]);
-  const history = useAsync(() => forecastApi.history({ ...filters, days: 28 }), [filters.blood_group, filters.product_type]);
+  // Only ask for a forecast once a real blood group is picked.
+  const groupOk = isValidBloodGroup(filters.blood_group);
+  const forecast = useAsync(() => (groupOk ? forecastApi.get(filters) : Promise.resolve(null)), [filters.blood_group, filters.product_type]);
+  const history = useAsync(() => (groupOk ? forecastApi.history({ ...filters, days: 28 }) : Promise.resolve(null)), [filters.blood_group, filters.product_type]);
   const alerts = useAsync(() => forecastApi.alerts(), []);
   const suggested = useAsync(() => requestsApi.list('suggested'), []);
-  const runAction = useAction();
-
-  async function runForecast() {
-    if (await runAction.run(() => forecastApi.run())) { alerts.reload(); suggested.reload(); forecast.reload(); }
-  }
+  const run = useForecastRun({
+    onSucceeded: () => { forecast.reload(); history.reload(); alerts.reload(); suggested.reload(); },
+  });
 
   const f = forecast.data;
   const insufficient = isInsufficientHistory(forecast.error);
@@ -54,8 +55,8 @@ export default function ForecastPage() {
   return (
     <div className="space-y-4">
       <PageHeader title="Forecast & alerts" subtitle="Demand forecast, shortage alerts and suggested requests"
-        actions={<Button busy={runAction.busy} onClick={runForecast}>Run forecast</Button>} />
-      <ErrorBanner error={runAction.error} />
+        actions={<Button busy={run.active} onClick={run.start}>{runLabel(run.job, run.active)}</Button>} />
+      <ErrorBanner error={run.error} />
       <div className="grid lg:grid-cols-2 gap-4">
         <Card title="7-day demand forecast">
           <BloodFilters value={filters} onChange={setFilters} />
