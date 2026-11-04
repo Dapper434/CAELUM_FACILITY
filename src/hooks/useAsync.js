@@ -31,6 +31,11 @@ export function useAsync(fn, deps = [], { interval } = {}) {
     mounted.current = true;
     setLoading(true);
     run();
+    return () => { mounted.current = false; };
+  }, [run]);
+
+  // Separate from the fetch above so a changing interval (start/stop polling) does not refetch or flash loading.
+  useEffect(() => {
     let timer = null;
     const start = () => { if (interval && !timer) timer = setInterval(run, interval); };
     const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
@@ -45,7 +50,6 @@ export function useAsync(fn, deps = [], { interval } = {}) {
       window.addEventListener('focus', onFocus);
     }
     return () => {
-      mounted.current = false;
       stop();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('focus', onFocus);

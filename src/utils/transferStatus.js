@@ -1,5 +1,7 @@
 import { formatTime } from './format';
 
+const hhmm = (iso) => formatTime(iso).slice(0, 5);
+
 // Contract §3.3: a transfer ends at delivered or cancelled.
 export const TERMINAL_STAGES = ['delivered', 'cancelled'];
 export const TRANSFER_POLL_MS = 12000;
@@ -21,5 +23,5 @@ export function courierAcceptedAt(t) {
 export function courierStatusLabel(t) {
   if (t?.stage !== 'courier_assigned') return null;
   const at = courierAcceptedAt(t);
-  return at ? `Courier accepted at ${formatTime(at)} – awaiting pickup` : 'Courier assigned – waiting for courier to accept';
+  return at ? `Courier accepted at ${hhmm(at)} – awaiting pickup` : 'Courier assigned – waiting for courier to accept';
 }
