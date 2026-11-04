@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { forecastApi } from '../api/forecast';
+import { useAuth } from '../context/AuthContext';
 import { requestsApi } from '../api/requests';
 import { useAsync } from '../hooks/useAsync';
 import { runLabel, useForecastRun } from '../hooks/useForecastRun';
@@ -38,6 +39,7 @@ function DemandBars({ days, compact }) {
 }
 
 export default function ForecastPage() {
+  const { facilityId } = useAuth();
   const [filters, setFilters] = useState(DEFAULT_FORECAST_FILTERS);
   // Only ask for a forecast once a real blood group is picked.
   const groupOk = isValidBloodGroup(filters.blood_group);
@@ -57,6 +59,14 @@ export default function ForecastPage() {
       <PageHeader title="Forecast & alerts" subtitle="Demand forecast, shortage alerts and suggested requests"
         actions={<Button busy={run.active} onClick={run.start}>{runLabel(run.job, run.active)}</Button>} />
       <ErrorBanner error={run.error} />
+      {run.warnings.length > 0 && (
+        <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <p className="font-semibold">Forecast finished, but {run.warnings.length} facilit{run.warnings.length === 1 ? 'y' : 'ies'} could not be forecast:</p>
+          <ul className="list-disc ml-5 mt-1">
+            {run.warnings.map((w, i) => <li key={`${w.facility_id}-${i}`}>{w.facility_id === facilityId ? 'This facility' : w.facility_id}: {w.error}</li>)}
+          </ul>
+        </div>
+      )}
       <div className="grid lg:grid-cols-2 gap-4">
         <Card title="7-day demand forecast">
           <BloodFilters value={filters} onChange={setFilters} />

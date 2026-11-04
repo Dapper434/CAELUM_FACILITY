@@ -11,6 +11,7 @@ export function useForecastRun({ onSucceeded } = {}) {
   const [jobId, setJobId] = useState(() => sessionStorage.getItem(KEY));
   const [started, setStarted] = useState(null);
   const [error, setError] = useState(null);
+  const [warnings, setWarnings] = useState([]);
   const [starting, setStarting] = useState(false);
   const handled = useRef(null);
   const onSucceededRef = useRef(onSucceeded);
@@ -29,6 +30,8 @@ export function useForecastRun({ onSucceeded } = {}) {
     if (job.status === 'succeeded') {
       handled.current = job.job_id;
       finish();
+      // 1.4.1: per-facility failures inside a successful run; null/missing means none.
+      setWarnings(Array.isArray(job.result?.errors) ? job.result.errors : []);
       onSucceededRef.current?.(job);
     } else if (job.status === 'failed') {
       handled.current = job.job_id;
@@ -47,6 +50,7 @@ export function useForecastRun({ onSucceeded } = {}) {
 
   async function start() {
     setError(null);
+    setWarnings([]);
     setStarting(true);
     try {
       const run = await forecastApi.run();
@@ -61,7 +65,7 @@ export function useForecastRun({ onSucceeded } = {}) {
   }
 
   const finished = job && !ACTIVE.includes(job.status);
-  return { start, job: finished ? null : job, active: active || starting, error, lastResult: finished ? job : null };
+  return { start, job: finished ? null : job, active: active || starting, error, warnings, lastResult: finished ? job : null };
 }
 
 export function runLabel(job, active) {
