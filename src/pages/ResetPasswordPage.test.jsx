@@ -71,4 +71,16 @@ describe('ResetPasswordPage', () => {
     await act(async () => { vi.advanceTimersByTime(LINK_WAIT_MS + 10); });
     expect(screen.getByRole('alert')).toHaveTextContent(/invalid or has expired/);
   });
+
+  it('gives new and confirm fields their own toggles', async () => {
+    auth.getSession.mockResolvedValue({ data: { session: { access_token: 'x' } } });
+    show();
+    await screen.findByLabelText('New password');
+    const toggles = screen.getAllByRole('button', { name: 'Show password' });
+    expect(toggles).toHaveLength(2);
+    fireEvent.click(toggles[1]);
+    expect(screen.getByLabelText('Confirm password')).toHaveAttribute('type', 'text');
+    expect(screen.getByLabelText('New password')).toHaveAttribute('type', 'password');
+    expect(screen.getByLabelText('New password')).toHaveAttribute('autocomplete', 'new-password');
+  });
 });

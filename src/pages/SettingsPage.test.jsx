@@ -79,4 +79,18 @@ describe('ChangePasswordCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('should be different');
   });
+
+  it('has toggles that reset to hidden after saving', async () => {
+    supaAuth.updateUser.mockResolvedValue({ data: {}, error: null });
+    render(<ChangePasswordCard />);
+    expect(screen.getAllByRole('button', { name: 'Show password' })).toHaveLength(2);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Show password' })[0]);
+    expect(screen.getByLabelText('New password')).toHaveAttribute('type', 'text');
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'newpassword1' } });
+    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'newpassword1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    expect(await screen.findByText('Password updated.')).toBeInTheDocument();
+    expect(screen.getByLabelText('New password')).toHaveAttribute('type', 'password');
+    expect(screen.getAllByRole('button', { name: 'Show password' })).toHaveLength(2);
+  });
 });

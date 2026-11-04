@@ -82,3 +82,13 @@ describe('after sign-in', () => {
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
 });
+
+describe('sign-in password field', () => {
+  it('has a show/hide toggle', () => {
+    authState.session = null;
+    render(<MemoryRouter><LoginPage /></MemoryRouter>);
+    expect(screen.getByLabelText('Password')).toHaveAttribute('autocomplete', 'current-password');
+    fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
+    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'text');
+  });
+});
