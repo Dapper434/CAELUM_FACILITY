@@ -36,6 +36,8 @@ export function clearRedirect() {
 /** Removes every app-owned key. `keepRedirect` keeps the user-bound return path (401 / expiry). */
 export function clearUserData({ keepRedirect = false } = {}) {
   stores().forEach((st) => {
-    Object.keys(st).filter((k) => k.startsWith(PREFIX) && !(keepRedirect && k === REDIRECT)).forEach((k) => st.removeItem(k));
+    const keys = [];
+    for (let i = 0; i < st.length; i += 1) keys.push(st.key(i));
+    keys.filter((k) => k && k.startsWith(PREFIX) && !(keepRedirect && k === REDIRECT)).forEach((k) => st.removeItem(k));
   });
 }

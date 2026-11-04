@@ -13,6 +13,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
   const userRef = useRef(getLastUser());
 
   /** Drops per-user data when the signed-in user goes away or changes (this tab or another). */
@@ -28,9 +30,9 @@ export function AuthProvider({ children }) {
       clearUserData({ keepRedirect: true });
       setLastUser(uid);
       userRef.current = uid;
-      if (prev) navigate('/', { replace: true });
+      if (prev) navigateRef.current('/', { replace: true });
     }
-  }, [navigate]);
+  }, []);
 
   const loadMe = useCallback(async (s) => {
     if (!s) { setMe(null); return; }
