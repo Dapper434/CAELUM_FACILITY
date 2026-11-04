@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, ErrorBanner } from './ui';
+import PasswordInput from './PasswordInput';
 
 export const MIN_PASSWORD = 8;
 
@@ -41,11 +42,11 @@ export default function PasswordForm({ onSubmit, submitLabel = 'Save password' }
       <ErrorBanner error={error} />
       <div>
         <label className="label" htmlFor="new-password">New password</label>
-        <input id="new-password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+        <PasswordInput id="new-password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
       </div>
       <div>
         <label className="label" htmlFor="confirm-password">Confirm password</label>
-        <input id="confirm-password" type="password" className="input" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+        <PasswordInput id="confirm-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
       </div>
       {invalid && <p className="text-xs text-status-crimson" role="status">{invalid}</p>}
       <Button type="submit" busy={busy}>{submitLabel}</Button>

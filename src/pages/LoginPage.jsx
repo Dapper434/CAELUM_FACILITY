@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { redirectFor } from '../lib/session';
 import { Button, ErrorBanner } from '../components/ui';
+import PasswordInput from '../components/PasswordInput';
 
 export const RESET_SENT = 'If that email exists, we sent a link to reset the password.';
 
@@ -74,7 +75,7 @@ export default function LoginPage() {
         {!forgot && (
           <div>
             <label className="label" htmlFor="password">Password</label>
-            <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+            <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
           </div>
         )}
         {resetMsg && <p role="status" className="text-sm text-slate-600">{resetMsg}</p>}
