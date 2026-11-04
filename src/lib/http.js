@@ -1,3 +1,5 @@
+import { trackSlow } from './slow';
+
 export class ApiError extends Error {
   constructor(status, code, message, details) {
     super(message || code || `HTTP ${status}`);
@@ -32,11 +34,11 @@ export function createHttpClient({ baseUrl, getToken, fetchImpl, onUnauthorized 
 
     let res;
     try {
-      res = await doFetch(`${baseUrl}${path}${buildQuery(params)}`, {
+      res = await trackSlow(doFetch(`${baseUrl}${path}${buildQuery(params)}`, {
         method,
         headers,
         body: body === undefined ? undefined : JSON.stringify(body),
-      });
+      }));
     } catch (err) {
       throw new ApiError(0, 'network_error', 'Cannot reach the CAELUM API');
     }

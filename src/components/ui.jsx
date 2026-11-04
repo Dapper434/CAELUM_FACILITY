@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useIsSlow } from '../lib/slow';
 
 const VARIANTS = {
   primary: 'bg-brand-cobalt text-white hover:bg-brand-navy',
@@ -68,4 +69,14 @@ export function Loading({ label = 'Loading…' }) {
 
 export function Empty({ children }) {
   return <p className="text-sm text-slate-500 py-4">{children}</p>;
+}
+
+/** Shown while a sign-in or API call has taken over 5 s (Render cold start). */
+export function WakeHint() {
+  if (!useIsSlow()) return null;
+  return (
+    <div role="status" className="fixed top-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 rounded-xl bg-white border border-border-warm shadow px-3 py-2 text-sm text-slate-700">
+      <Loader2 className="w-4 h-4 animate-spin" /> Waking up the server… this can take up to a minute.
+    </div>
+  );
 }
