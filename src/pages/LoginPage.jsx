@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { redirectFor } from '../lib/session';
 import { Button, ErrorBanner } from '../components/ui';
 
 export const RESET_SENT = 'If that email exists, we sent a link to reset the password.';
@@ -33,7 +34,8 @@ export default function LoginPage() {
   const [forgot, setForgot] = useState(() => new URLSearchParams(location.search).get('forgot') === '1');
   const [resetMsg, setResetMsg] = useState(null);
 
-  if (session) return <Navigate to={location.state?.from || '/'} replace />;
+  // Home by default; a saved deep link only for the same user who left it.
+  if (session) return <Navigate to={redirectFor(session.user?.id) || '/'} replace />;
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -44,8 +46,8 @@ export default function LoginPage() {
         setResetMsg(await requestPasswordReset(email));
         return;
       }
-      await signIn(email, password);
-      navigate(location.state?.from || '/', { replace: true });
+      const user = await signIn(email, password);
+      navigate(redirectFor(user?.id) || '/', { replace: true });
     } catch (err) {
       setError(err);
     } finally {
