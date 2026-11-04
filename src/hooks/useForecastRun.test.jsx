@@ -78,7 +78,7 @@ describe('Run forecast job', () => {
     const before = forecastApi.alerts.mock.calls.length;
     forecastApi.getRun.mockResolvedValue(job('succeeded', { result: { suggested_requests: [], alerts: [], errors: [{ facility_id: 'f1', error: 'no demand_logs' }] } }));
     await tick();
-    expect(screen.getByRole('status')).toHaveTextContent('This facility: no demand_logs');
+    expect(screen.getByText(/This facility: no demand_logs/)).toBeInTheDocument();
     expect(screen.queryByRole('alert')).toBeNull();
     expect(forecastApi.alerts.mock.calls.length).toBeGreaterThan(before);
   });
@@ -90,6 +90,57 @@ describe('Run forecast job', () => {
     await tick();
     expect(screen.queryByText(/could not be forecast/)).toBeNull();
     expect(runButton()).not.toBeDisabled();
+  });
+
+  const done = { facilities: 1, series: 8, shortages: 2, alerts: [{}, {}], suggested_requests: [{}], errors: [] };
+
+  it.each([
+    ['202 new job', job('queued')],
+    ['200 dedupe (existing running job)', job('running')],
+    ['200 dedupe with id field', { id: 'j1', status: 'running' }],
+    ['200 dedupe nested job', { job: job('queued') }],
+  ])('%s: polls through queued/running and shows the summary with counts', async (_n, r) => {
+    forecastApi.getRun.mockResolvedValue(job('queued'));
+    await startWith(r);
+    expect(runButton()).toBeDisabled();
+    forecastApi.getRun.mockResolvedValue(job('running'));
+    await tick();
+    expect(runButton()).toHaveTextContent('Running… 2/4 facilities');
+    await tick();
+    expect(runButton()).toBeDisabled();
+    expect(forecastApi.getRun).toHaveBeenCalledWith('j1');
+    forecastApi.getRun.mockResolvedValue(job('succeeded', { result: done }));
+    await tick();
+    expect(runButton()).not.toBeDisabled();
+    expect(screen.getByRole('status')).toHaveTextContent('Forecast finished: 1 facilities, 8 series, 2 shortages, 2 alerts, 1 suggested requests.');
+    await tick(); await tick();
+    expect(screen.getByRole('status')).toHaveTextContent('Forecast finished');
+  });
+
+  it('shows a failure message that persists after the button returns to idle', async () => {
+    forecastApi.getRun.mockResolvedValue(job('running'));
+    await startWith(job('queued'));
+    forecastApi.getRun.mockResolvedValue(job('failed', { error: 'database timeout' }));
+    await tick(); await tick();
+    expect(runButton()).not.toBeDisabled();
+    expect(screen.getByRole('alert')).toHaveTextContent('database timeout');
+    expect(screen.queryByText(/Forecast finished/)).toBeNull();
+  });
+
+  it('shows the HTTP error when starting the run fails', async () => {
+    forecastApi.run.mockRejectedValue(new ApiError(403, 'forbidden', 'Not allowed to run this forecast'));
+    render(<MemoryRouter><ForecastPage /></MemoryRouter>);
+    await flush();
+    fireEvent.click(runButton());
+    await flush();
+    expect(screen.getByRole('alert')).toHaveTextContent('Not allowed to run this forecast');
+    expect(forecastApi.getRun).not.toHaveBeenCalled();
+  });
+
+  it('reports a response without a job id instead of going silently idle', async () => {
+    await startWith({ status: 'queued' });
+    expect(screen.getByRole('alert')).toHaveTextContent('did not return a forecast job id');
+    expect(sessionStorage.getItem('caelum.forecastRun')).toBeNull();
   });
 
   it('shows the error of a failed run', async () => {
