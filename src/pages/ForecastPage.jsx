@@ -3,7 +3,7 @@ import { forecastApi } from '../api/forecast';
 import { useAuth } from '../context/AuthContext';
 import { requestsApi } from '../api/requests';
 import { useAsync } from '../hooks/useAsync';
-import { runLabel, useForecastRun } from '../hooks/useForecastRun';
+import { runLabel, summaryText, useForecastRun } from '../hooks/useForecastRun';
 import { isValidBloodGroup } from '../utils/bloodGroup';
 import { Button, Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui';
 import StatusBadge from '../components/StatusBadge';
@@ -59,6 +59,9 @@ export default function ForecastPage() {
       <PageHeader title="Forecast & alerts" subtitle="Demand forecast, shortage alerts and suggested requests"
         actions={<Button busy={run.active} onClick={run.start}>{runLabel(run.job, run.active)}</Button>} />
       <ErrorBanner error={run.error} />
+      {run.summary && (
+        <div role="status" className="rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{summaryText(run.summary)}</div>
+      )}
       {run.warnings.length > 0 && (
         <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
           <p className="font-semibold">Forecast finished, but {run.warnings.length} facilit{run.warnings.length === 1 ? 'y' : 'ies'} could not be forecast:</p>
