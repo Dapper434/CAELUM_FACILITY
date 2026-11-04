@@ -9,6 +9,7 @@ describe('http client', () => {
   it('builds query strings without empty values', () => {
     expect(buildQuery({ a: 'O-', b: '', c: null, d: undefined, e: false })).toBe('?a=O-&e=false');
     expect(buildQuery({})).toBe('');
+    expect(buildQuery({ blood_group: 'null', product_type: 'undefined', q: '  ', days: 28 })).toBe('?days=28');
   });
 
   it('sends bearer token and unwraps data', async () => {

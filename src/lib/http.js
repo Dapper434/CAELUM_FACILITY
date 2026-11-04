@@ -14,7 +14,11 @@ function buildQuery(params) {
   if (!params) return '';
   const qs = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== '') qs.append(k, String(v));
+    if (v === undefined || v === null) return;
+    const s = String(v).trim();
+    // Never send placeholders; the API rejects them with 400 validation_error.
+    if (s === '' || s === 'null' || s === 'undefined') return;
+    qs.append(k, s);
   });
   const s = qs.toString();
   return s ? `?${s}` : '';
