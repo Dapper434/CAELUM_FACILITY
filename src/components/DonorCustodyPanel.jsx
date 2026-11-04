@@ -1,8 +1,8 @@
 import { courierAcceptedAt, courierStatusLabel } from '../utils/transferStatus';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { transfersApi } from '../api/transfers';
-import { couriersApi } from '../api/couriers';
+import { useCountdown } from '../hooks/useCountdown';
 import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
 import { Button, ErrorBanner, Loading } from './ui';
@@ -44,27 +44,82 @@ function PackForm({ transfer, onDone }) {
   );
 }
 
-function AssignCourier({ transfer, onDone }) {
-  const couriers = useAsync(() => couriersApi.list('available'), []);
-  const [courierId, setCourierId] = useState('');
-  const { busy, error, run } = useAction();
-  async function assign() { if (await run(() => transfersApi.assignCourier(transfer.id, courierId))) onDone(); }
-  if (couriers.loading) return <Loading label="Loading couriers…" />;
+function suggestionLabel(c) {
+  const parts = [];
+  if (c.distance_km != null) parts.push(`${Math.round(c.distance_km * 10) / 10} km`);
+  if (c.eta_minutes != null) parts.push(`~${c.eta_minutes} min`);
+  parts.push('free');
+  return parts.join(', ');
+}
+
+/** Why the last courier is no longer on this transfer (timed out or declined), or null for a first assignment. */
+export function lastCourierMiss(transfer) {
+  const attempts = transfer.courier_attempts || [];
+  const last = attempts[attempts.length - 1];
+  if (transfer.courier_timed_out_at && (!last || last.outcome === 'timed_out')) return { outcome: 'timed_out', ...(last || {}) };
+  if (last) return last;
+  if (transfer.last_declined_courier_id) return { outcome: 'declined', courier_id: transfer.last_declined_courier_id, reason_code: transfer.courier_decline_reason };
+  return null;
+}
+
+export function AssignCourier({ transfer, onDone }) {
+  const attemptsKey = (transfer.courier_attempts || []).length;
+  const sugs = useAsync(() => transfersApi.courierSuggestions(transfer.id), [transfer.id, attemptsKey, transfer.courier_timed_out_at]);
+  const [busyId, setBusyId] = useState('');
+  const { error, run } = useAction();
+  async function assign(id) {
+    setBusyId(id);
+    const ok = await run(() => transfersApi.assignCourier(transfer.id, id));
+    setBusyId('');
+    if (ok) onDone(); else sugs.reload();
+  }
+  const miss = lastCourierMiss(transfer);
+  if (sugs.loading && !sugs.data) return <Loading label="Finding the nearest free couriers…" />;
+  const list = sugs.data?.suggestions || [];
+  const [top, ...rest] = list;
   return (
-    <div className="space-y-2">
-      <ErrorBanner error={error || couriers.error} />
-      <div className="flex flex-wrap items-end gap-2">
-        <div className="flex-1 min-w-[12rem]"><label className="label" htmlFor="as-courier">Available courier</label>
-          <select id="as-courier" className="input" value={courierId} onChange={(e) => setCourierId(e.target.value)}>
-            <option value="">Select…</option>
-            {(couriers.data || []).map((c) => (
-              <option key={c.id} value={c.id}>{c.full_name} · {humanize(c.vehicle_type)} · box {c.cold_box_id || '—'}{c.training_certified ? '' : ' (not certified)'}</option>
-            ))}
-          </select></div>
-        <Button busy={busy} disabled={!courierId} onClick={assign}>Assign courier</Button>
-      </div>
+    <div className="space-y-3" data-testid="assign-courier">
+      {miss && (
+        <div className="rounded-lg border border-status-crimson/40 bg-red-50 p-3 text-sm" data-testid="courier-miss">
+          <strong>{miss.outcome === 'timed_out' ? 'The courier did not accept in time.' : 'The courier declined this job'}</strong>
+          {miss.outcome !== 'timed_out' && miss.reason_code ? ` (${humanize(miss.reason_code)}).` : miss.outcome !== 'timed_out' ? '.' : ''}
+          {' '}Pick the next courier below; couriers who already passed on this job are left out.
+        </div>
+      )}
+      <ErrorBanner error={error || sugs.error} />
+      {top ? (
+        <>
+          <Button busy={busyId === top.courier_id} disabled={!!busyId} onClick={() => assign(top.courier_id)}>
+            {miss ? 'Reassign to' : 'Assign'} {top.full_name} ({suggestionLabel(top)})
+          </Button>
+          {rest.length > 0 && (
+            <ul className="divide-y divide-border-warm border border-border-warm rounded-lg" data-testid="courier-list">
+              {rest.map((c) => (
+                <li key={c.courier_id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+                  <span>{c.full_name} · {humanize(c.vehicle_type)} · {suggestionLabel(c)}{c.same_region ? '' : ' · other region'}{c.training_certified ? '' : ' · not certified'}{c.location_source === 'home_facility' ? ' · from home base' : ''}</span>
+                  <Button variant="ghost" busy={busyId === c.courier_id} disabled={!!busyId} onClick={() => assign(c.courier_id)}>Assign</Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      ) : (
+        <div className="text-sm text-slate-600">No free courier right now. <Button variant="ghost" onClick={sugs.reload}>Check again</Button></div>
+      )}
     </div>
   );
+}
+
+/** When the courier's accept deadline passes, refetch (the API sweeps the timeout on read) until the stage changes. */
+export function useRefetchOnExpiry(deadline, active, onExpire) {
+  const ms = useCountdown(active ? deadline : null);
+  const fired = useRef(0);
+  useEffect(() => { fired.current = 0; }, [deadline]);
+  useEffect(() => {
+    if (!active || !deadline || ms > 0 || fired.current >= 5) return undefined;
+    const t = setTimeout(() => { fired.current += 1; onExpire(); }, fired.current === 0 ? 500 : 3000);
+    return () => clearTimeout(t);
+  });
 }
 
 export const QR_REFRESH_STAGES = ['packed', 'courier_assigned'];
@@ -107,6 +162,8 @@ export function QrDisplay({ transfer }) {
 
 export default function DonorCustodyPanel({ transfer, onChange }) {
   const { stage } = transfer;
+  const waiting = stage === 'courier_assigned' && !courierAcceptedAt(transfer);
+  useRefetchOnExpiry(transfer.courier_accept_deadline, waiting, onChange);
   return (
     <div className="space-y-4">
       {stage === 'accepted' && <PackForm transfer={transfer} onDone={onChange} />}

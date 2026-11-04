@@ -6,6 +6,7 @@ export const transfersApi = {
   pack: (id, body) => http.post(`/transfers/${id}/pack`, body),
   qr: (id, { refresh = false } = {}) => http.get(`/transfers/${id}/qr`, refresh ? { refresh: 'true' } : undefined),
   otp: (id) => http.get(`/transfers/${id}/otp`),
+  courierSuggestions: (id) => http.get(`/transfers/${id}/courier-suggestions`),
   assignCourier: (id, courierId) => http.post(`/transfers/${id}/assign-courier`, { courier_id: courierId }),
   confirmReceipt: (id, condition, note) =>
     http.post(`/transfers/${id}/confirm-receipt`, note ? { condition, note } : { condition }),
