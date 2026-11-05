@@ -41,7 +41,7 @@ export default function CorrectUnitForm({ unit, onDone, onCancel }) {
   }
 
   return (
-    <form onSubmit={submit} className="grid grid-cols-2 md:grid-cols-5 gap-2 items-end bg-bg-inset p-3 rounded-xl">
+    <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 items-end bg-bg-inset p-3 rounded-xl">
       <div className="col-span-2 md:col-span-5"><ErrorBanner error={error} /></div>
       <div><label className="label" htmlFor={`cl-${unit.id}`}>Lot</label><input id={`cl-${unit.id}`} className="input" value={form.lot_number} onChange={set('lot_number')} /></div>
       <div><label className="label" htmlFor={`ce-${unit.id}`}>Expiry</label><input id={`ce-${unit.id}`} type="datetime-local" className="input" value={form.expiry_date} onChange={set('expiry_date')} /></div>

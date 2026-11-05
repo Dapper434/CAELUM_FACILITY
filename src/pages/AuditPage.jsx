@@ -112,7 +112,7 @@ export default function AuditPage() {
       <SummaryStrip summary={summary} />
       <Card>
         <form
-          className="flex flex-wrap gap-2 items-end mb-4"
+          className="flex flex-wrap gap-3 items-end mb-4"
           onSubmit={(e) => { e.preventDefault(); setLoaded(false); load(); loadSummary(); }}
         >
           <label className="text-xs flex items-center gap-1.5">
@@ -125,14 +125,16 @@ export default function AuditPage() {
             <option value="30d">Last 30 days</option>
             <option value="">Any time</option>
           </select>
-          <input
-            aria-label="Search"
-            placeholder="Search…"
-            className="border rounded-lg px-2 py-1.5 text-xs w-40"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-          <Button type="submit" variant="ghost">Filter</Button>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:flex-1 min-w-0">
+            <input
+              aria-label="Search"
+              placeholder="Search…"
+              className="border rounded-lg px-2 py-1.5 text-xs flex-1 min-w-[8rem] sm:max-w-xs"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            <Button type="submit" variant="ghost" className="shrink-0">Filter</Button>
+          </div>
         </form>
         <ErrorBanner error={action.error} />
         {!loaded ? <Loading /> : (

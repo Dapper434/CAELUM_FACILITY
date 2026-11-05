@@ -3,6 +3,7 @@ import { availabilityApi } from '../api/availability';
 import { useAsync } from '../hooks/useAsync';
 import { Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui';
 import BloodFilters from '../components/BloodFilters';
+import ResponsiveTable from '../components/ResponsiveTable';
 import { formatDateTime } from '../utils/format';
 
 export default function AvailabilityPage() {
@@ -13,6 +14,14 @@ export default function AvailabilityPage() {
     [filters.blood_group, filters.product_type, emergency],
   );
   const rows = data || [];
+  const columns = [
+    { header: 'Facility', className: 'font-semibold', cell: (r) => r.facility_name },
+    { header: 'County', cell: (r) => r.county },
+    { header: 'Units', className: 'font-bold', cell: (r) => r.units_available },
+    { header: 'Expiring ≤72h', cell: (r) => r.expiring_within_72h },
+    { header: 'Earliest expiry', className: 'whitespace-nowrap', cell: (r) => formatDateTime(r.earliest_expiry) },
+    { header: 'Distance', cell: (r) => (r.distance_km != null ? `${r.distance_km} km` : '—') },
+  ];
   return (
     <div>
       <PageHeader title="Availability lookup" subtitle="Aggregated stock at facilities in your region" />
@@ -25,25 +34,22 @@ export default function AvailabilityPage() {
           </label>
         </div>
         <ErrorBanner error={error} />
-        {loading ? <Loading /> : rows.length === 0 ? <Empty>No stock found.</Empty> : (
-          <table className="w-full">
-            <thead><tr>
-              <th className="th">Facility</th><th className="th">County</th><th className="th">Units</th>
-              <th className="th">Expiring ≤72h</th><th className="th">Earliest expiry</th><th className="th">Distance</th>
-            </tr></thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.facility_id}>
-                  <td className="td font-semibold">{r.facility_name}</td>
-                  <td className="td">{r.county}</td>
-                  <td className="td font-bold">{r.units_available}</td>
-                  <td className="td">{r.expiring_within_72h}</td>
-                  <td className="td">{formatDateTime(r.earliest_expiry)}</td>
-                  <td className="td">{r.distance_km != null ? `${r.distance_km} km` : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {loading ? <Loading /> : (
+          <ResponsiveTable
+            aria-label="Availability results"
+            rows={rows}
+            keyOf={(r) => r.facility_id}
+            columns={columns}
+            empty={<Empty>No stock found.</Empty>}
+            card={(r) => (
+              <div className="space-y-1" data-testid="availability-card">
+                <div className="font-semibold text-sm">{r.facility_name}</div>
+                <div className="text-xs text-slate-500">{r.county || '—'}{r.distance_km != null ? ` · ${r.distance_km} km` : ''}</div>
+                <div className="text-sm"><span className="font-bold">{r.units_available}</span> units · {r.expiring_within_72h} expiring ≤72h</div>
+                <div className="text-xs text-slate-600">Earliest {formatDateTime(r.earliest_expiry)}</div>
+              </div>
+            )}
+          />
         )}
       </Card>
     </div>
