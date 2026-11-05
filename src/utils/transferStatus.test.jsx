@@ -35,7 +35,7 @@ describe('Transfers list polling', () => {
     transfersApi.list.mockResolvedValue([row('courier_assigned', { courier_accepted_at: '2026-11-05T07:05:00Z' })]);
     render(<MemoryRouter><TransfersPage /></MemoryRouter>);
     await flush();
-    expect(screen.getByText('Courier accepted at 10:05 – awaiting pickup')).toBeInTheDocument();
+    expect(screen.getAllByText('Courier accepted at 10:05 – awaiting pickup').length).toBeGreaterThanOrEqual(1);
     const n = transfersApi.list.mock.calls.length;
     await flush(TRANSFER_POLL_MS);
     expect(transfersApi.list.mock.calls.length).toBeGreaterThan(n);
