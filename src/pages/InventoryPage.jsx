@@ -120,16 +120,14 @@ export default function InventoryPage() {
                 <UnitActions unit={u} busy={action.busy} editing={editing} onStatus={setStatus} onToggleCorrect={toggleCorrect} />
               </div>
             )}
-            afterRow={(u) => (editing === u.id ? (
-              // Desktop: full-width table row. Mobile: already inside the card list item.
-              <>
-                <tr className="hidden md:table-row"><td colSpan={columns.length} className="td">
-                  <CorrectUnitForm unit={u} onCancel={() => setEditing(null)} onDone={() => { setEditing(null); reload(); }} />
-                </td></tr>
-                <div className="md:hidden pt-1">
-                  <CorrectUnitForm unit={u} onCancel={() => setEditing(null)} onDone={() => { setEditing(null); reload(); }} />
-                </div>
-              </>
+            afterRow={(u, { surface }) => (editing === u.id ? (
+              surface === 'table'
+                ? <tr><td colSpan={columns.length} className="td">
+                    <CorrectUnitForm unit={u} onCancel={() => setEditing(null)} onDone={() => { setEditing(null); reload(); }} />
+                  </td></tr>
+                : <div className="pt-1">
+                    <CorrectUnitForm unit={u} onCancel={() => setEditing(null)} onDone={() => { setEditing(null); reload(); }} />
+                  </div>
             ) : null)}
           />
         )}

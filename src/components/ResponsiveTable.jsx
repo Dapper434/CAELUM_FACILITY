@@ -31,7 +31,7 @@ export default function ResponsiveTable({
                   ))}
                 </dl>
               )}
-              {afterRow?.(row)}
+              {afterRow?.(row, { surface: 'card' })}
             </li>
           );
         })}
@@ -51,7 +51,7 @@ export default function ResponsiveTable({
                       <td key={col.header} className={`td ${col.className || ''}`}>{col.cell(row)}</td>
                     ))}
                   </tr>
-                  {afterRow?.(row)}
+                  {afterRow?.(row, { surface: 'table' })}
                 </React.Fragment>
               );
             })}
