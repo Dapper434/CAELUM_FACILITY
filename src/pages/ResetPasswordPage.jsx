@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <main className="min-h-screen flex items-center justify-center p-4">
       <div className="card w-full max-w-sm p-6 space-y-4">
         <h1 className="text-lg font-extrabold text-slate-900">Set your password</h1>
         {state === 'waiting' && <Loading label="Checking your link…" />}
@@ -50,6 +50,6 @@ export default function ResetPasswordPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

@@ -92,3 +92,14 @@ describe('sign-in password field', () => {
     expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'text');
   });
 });
+
+describe('sign-in landmarks', () => {
+
+  it('has one h1 and wraps the screen in a main landmark', () => {
+    render(<MemoryRouter><LoginPage /></MemoryRouter>);
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('CAELUM Facility');
+    expect(screen.getByRole('main')).toBeInTheDocument();
+    expect(screen.getByRole('main').querySelector('main')).toBeNull();
+  });
+});

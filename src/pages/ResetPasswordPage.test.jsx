@@ -84,3 +84,19 @@ describe('ResetPasswordPage', () => {
     expect(screen.getByLabelText('New password')).toHaveAttribute('autocomplete', 'new-password');
   });
 });
+
+describe('reset-password landmarks', () => {
+  beforeEach(() => {
+    window.history.replaceState(null, '', '/reset-password');
+    auth.getSession.mockReset().mockResolvedValue({ data: { session: null } });
+    auth.onAuthStateChange.mockReset().mockImplementation((cb) => ({ data: { subscription: { unsubscribe: vi.fn() } } }));
+  });
+
+  it('has one h1 and wraps the screen in a main landmark', async () => {
+    show();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Set your password');
+    expect(screen.getByRole('main')).toBeInTheDocument();
+    expect(screen.getByRole('main').querySelector('main')).toBeNull();
+  });
+});

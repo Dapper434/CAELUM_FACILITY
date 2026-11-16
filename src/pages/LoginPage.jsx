@@ -57,7 +57,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <main className="min-h-screen flex items-center justify-center p-4">
       <form onSubmit={onSubmit} className="card w-full max-w-sm p-6 space-y-4">
         <div className="flex items-center gap-3">
           <span className="w-9 h-9 rounded-xl bg-brand-burgundy flex items-center justify-center text-white font-extrabold">C</span>
@@ -86,6 +86,6 @@ export default function LoginPage() {
           </button>
         )}
       </form>
-    </div>
+    </main>
   );
 }
