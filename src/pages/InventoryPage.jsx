@@ -65,7 +65,8 @@ export default function InventoryPage() {
   }
   const toggleCorrect = (id) => setEditing((cur) => (cur === id ? null : id));
 
-  const units = data?.items || [];
+  const pageData = readPage(data);
+  const units = pageData.items;
   const columns = [
     {
       header: 'Unit',
@@ -139,6 +140,16 @@ export default function InventoryPage() {
                     <CorrectUnitForm unit={u} onCancel={() => setEditing(null)} onDone={() => { setEditing(null); reload(); }} />
                   </div>
             ) : null)}
+          />
+        )}
+        {!loading && data && (
+          <PageControls
+            page={pageData.page}
+            pageSize={pageData.page_size || PAGE_SIZE}
+            total={pageData.total}
+            hasMore={pageData.has_more}
+            onPage={setPage}
+            noun="units"
           />
         )}
       </Card>

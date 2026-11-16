@@ -24,7 +24,7 @@ const paged = (items, { page = 1, total, has_more, page_size = 25 } = {}) => ({
 });
 
 describe('Inventory pagination', () => {
-  beforeEach(() => inventoryApi.list.mockReset());
+  beforeEach(() => { inventoryApi.list.mockReset(); });
 
   it('sends page and page_size, reads items/total/has_more, and offers page controls', async () => {
     inventoryApi.list.mockResolvedValue(paged([unit('a')], { page: 1, total: 60, has_more: true }));
@@ -66,9 +66,17 @@ describe('Inventory pagination', () => {
   });
 
   it('clamps back to the last page when the requested page is past the end', async () => {
-    inventoryApi.list.mockImplementation(async ({ page }) => {
-      if (page >= 3) return paged([], { page, total: 26, has_more: false });
-      return paged([unit(`p${page}`)], { page, total: 26, has_more: true });
+    let shrunk = false;
+    inventoryApi.list.mockImplementation(async (params = {}) => {
+      const page = params.page;
+      // First two pages look like a 3-page list so Next stays enabled; page 3
+      // then comes back empty with a smaller total (the list shrank).
+      if (page >= 3) {
+        shrunk = true;
+        return paged([], { page, total: 26, has_more: false });
+      }
+      if (shrunk) return paged([unit(`p${page}`)], { page, total: 26, has_more: false });
+      return paged([unit(`p${page}`)], { page, total: 60, has_more: true });
     });
     render(<MemoryRouter><InventoryPage /></MemoryRouter>);
     await screen.findByText('U-p1');

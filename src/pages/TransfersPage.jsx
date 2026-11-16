@@ -29,7 +29,8 @@ export default function TransfersPage() {
     return parsed;
   }, [activeOnly, page], { interval });
   const changeActive = (value) => { setActiveOnly(value); setPage(1); };
-  const rows = data?.items || [];
+  const pageData = readPage(data);
+  const rows = pageData.items;
   const columns = [
     { header: 'Code', className: 'font-mono text-xs', cell: (t) => <Link className="text-brand-cobalt font-semibold" to={`/transfers/${t.id}`}>{t.transfer_code}</Link> },
     { header: 'Role', cell: (t) => humanize(transferRole(t, facilityId)) || 'Unknown' },
@@ -73,10 +74,10 @@ export default function TransfersPage() {
         )}
         {!loading && data && (
           <PageControls
-            page={data.page}
-            pageSize={data.page_size || PAGE_SIZE}
-            total={data.total}
-            hasMore={data.has_more}
+            page={pageData.page}
+            pageSize={pageData.page_size || PAGE_SIZE}
+            total={pageData.total}
+            hasMore={pageData.has_more}
             onPage={setPage}
             noun="transfers"
           />

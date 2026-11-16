@@ -25,7 +25,8 @@ export default function RequestsPage() {
     return parsed;
   }, [status, page], { interval: 30000 });
   const changeStatus = (value) => { setStatus(value); setPage(1); };
-  const rows = data?.items || [];
+  const pageData = readPage(data);
+  const rows = pageData.items;
   const columns = [
     { header: 'Code', className: 'font-mono text-xs', cell: (r) => <Link className="text-brand-cobalt font-semibold" to={`/requests/${r.id}`}>{r.request_code}</Link> },
     { header: 'Group', className: 'font-bold', cell: (r) => r.blood_group },
@@ -67,10 +68,10 @@ export default function RequestsPage() {
         )}
         {!loading && data && (
           <PageControls
-            page={data.page}
-            pageSize={data.page_size || PAGE_SIZE}
-            total={data.total}
-            hasMore={data.has_more}
+            page={pageData.page}
+            pageSize={pageData.page_size || PAGE_SIZE}
+            total={pageData.total}
+            hasMore={pageData.has_more}
             onPage={setPage}
             noun="requests"
           />
