@@ -20,7 +20,7 @@ export default function CandidateList({ candidates, onOffer, busy, canOffer }) {
               <div className="text-xs text-slate-600">
                 Stock {c.current_stock} → {c.post_transfer_units} · {c.post_transfer_cover_days} days cover after · earliest expiry {formatDateTime(c.earliest_expiry)}
               </div>
-              {c.cold_chain_viable && <div className="text-[11px] text-emerald-text flex items-center gap-1 mt-0.5"><Snowflake className="w-3 h-3" /> Cold chain viable</div>}
+              {c.cold_chain_viable && <div className="text-xs text-emerald-text flex items-center gap-1 mt-0.5"><Snowflake className="w-3 h-3" /> Cold chain viable</div>}
             </div>
           </div>
           {canOffer && <Button busy={busy} onClick={() => onOffer(c)}>Send offer</Button>}

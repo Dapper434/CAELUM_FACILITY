@@ -21,7 +21,7 @@ export default function RequestsPage() {
     { header: 'Group', className: 'font-bold', cell: (r) => r.blood_group },
     { header: 'Units', cell: (r) => r.units_requested },
     { header: 'Urgency', cell: (r) => <StatusBadge value={r.urgency} /> },
-    { header: 'Status', cell: (r) => (<><StatusBadge value={r.status} />{r.source === 'forecast' && <span className="ml-1 text-[10px] text-slate-600">forecast</span>}</>) },
+    { header: 'Status', cell: (r) => (<><StatusBadge value={r.status} />{r.source === 'forecast' && <span className="ml-1 text-xs text-slate-600">forecast</span>}</>) },
     { header: 'Created', className: 'whitespace-nowrap', cell: (r) => formatDateTime(r.created_at) },
   ];
   return (

@@ -25,7 +25,7 @@ export default function ResponsiveTable({
                 <dl className="space-y-1.5">
                   {columns.map((col) => (
                     <div key={col.header} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                      <dt className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600">{col.header}</dt>
+                      <dt className="text-xs font-extrabold uppercase tracking-widest text-slate-600">{col.header}</dt>
                       <dd className={`text-sm text-right min-w-0 ${col.className || ''}`}>{col.cell(row)}</dd>
                     </div>
                   ))}

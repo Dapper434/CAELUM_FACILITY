@@ -29,9 +29,9 @@ function DemandBars({ days, compact }) {
     <div className={`flex items-end ${compact ? 'gap-0.5' : 'gap-2'} h-32 mt-3`}>
       {days.map((d) => (
         <div key={d.date} title={`${d.date}: ${d.units}`} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
-          {!compact && <span className="text-[10px] font-mono text-slate-600">{d.units.toFixed(1)}</span>}
+          {!compact && <span className="text-xs font-mono text-slate-600">{d.units.toFixed(1)}</span>}
           <div className="w-full bg-brand-cobalt/80 rounded-t" style={{ height: `${(d.units / max) * 90}%` }} />
-          {!compact && <span className="text-[10px] text-slate-600">{d.date.slice(5)}</span>}
+          {!compact && <span className="text-xs text-slate-600">{d.date.slice(5)}</span>}
         </div>
       ))}
     </div>
@@ -84,7 +84,7 @@ export default function ForecastPage() {
                     <div className="rounded-xl bg-bg-inset p-2"><div className="label">Avg / day</div><div className="text-lg font-bold">{f.average_daily_demand}</div></div>
                   </div>
                   <DemandBars days={f.daily_demand || []} />
-                  <p className="text-[11px] text-slate-600 mt-2">Method: {f.method} · {f.history_points} history points</p>
+                  <p className="text-xs text-slate-600 mt-2">Method: {f.method} · {f.history_points} history points</p>
                 </>
               )}
             </>

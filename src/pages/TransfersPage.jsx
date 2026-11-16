@@ -24,7 +24,7 @@ export default function TransfersPage() {
     { header: 'Code', className: 'font-mono text-xs', cell: (t) => <Link className="text-brand-cobalt font-semibold" to={`/transfers/${t.id}`}>{t.transfer_code}</Link> },
     { header: 'Role', cell: (t) => humanize(transferRole(t, facilityId)) || 'Unknown' },
     { header: 'Blood', className: 'font-bold', cell: (t) => `${t.quantity} × ${t.blood_group}` },
-    { header: 'Stage', cell: (t) => (<><StatusBadge value={t.stage} />{courierStatusLabel(t) && <div className="text-[11px] text-slate-600 mt-0.5">{courierStatusLabel(t)}</div>}</>) },
+    { header: 'Stage', cell: (t) => (<><StatusBadge value={t.stage} />{courierStatusLabel(t) && <div className="text-xs text-slate-600 mt-0.5">{courierStatusLabel(t)}</div>}</>) },
     { header: 'Temp', className: (t) => (t.temperature_excursion ? 'text-crimson-text font-bold' : ''), cell: (t) => formatTemp(t.temperature_c) },
     { header: 'Updated', className: 'whitespace-nowrap', cell: (t) => formatDateTime(t.updated_at) },
   ];
@@ -55,7 +55,7 @@ export default function TransfersPage() {
                 </div>
                 <div className="text-sm font-bold">{t.quantity} × {t.blood_group}</div>
                 <div className="text-xs text-slate-600">{humanize(transferRole(t, facilityId)) || 'Unknown'} · {formatTemp(t.temperature_c)}</div>
-                {courierStatusLabel(t) && <div className="text-[11px] text-slate-600">{courierStatusLabel(t)}</div>}
+                {courierStatusLabel(t) && <div className="text-xs text-slate-600">{courierStatusLabel(t)}</div>}
                 <div className="text-xs text-slate-600">{formatDateTime(t.updated_at)}</div>
               </Link>
             )}

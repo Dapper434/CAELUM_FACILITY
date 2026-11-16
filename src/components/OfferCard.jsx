@@ -35,10 +35,10 @@ export default function OfferCard({ offer, incoming, onChange }) {
         <span className="font-mono">{offer.offer_code}</span> · {offer.distance_km} km · ETA {formatEta(offer.eta_minutes, offer.eta_source)} · cover after {offer.post_transfer_cover_days} days
       </div>
       {offer.proposed_unit_codes?.length > 0 && (
-        <div className="text-[11px] font-mono text-slate-600 mt-1">Units: {offer.proposed_unit_codes.join(', ')}</div>
+        <div className="text-xs font-mono text-slate-600 mt-1">Units: {offer.proposed_unit_codes.join(', ')}</div>
       )}
-      {offer.status === 'held' && <div className="text-[11px] text-slate-600 mt-1">Held {formatDateTime(offer.held_at)} · extensions used {offer.hold_extensions}/1</div>}
-      {offer.decline_reason && <div className="text-[11px] text-slate-600 mt-1">Declined: {offer.decline_reason}{offer.decline_note ? ` — ${offer.decline_note}` : ''}</div>}
+      {offer.status === 'held' && <div className="text-xs text-slate-600 mt-1">Held {formatDateTime(offer.held_at)} · extensions used {offer.hold_extensions}/1</div>}
+      {offer.decline_reason && <div className="text-xs text-slate-600 mt-1">Declined: {offer.decline_reason}{offer.decline_note ? ` — ${offer.decline_note}` : ''}</div>}
       <ErrorBanner error={error} />
       {incoming && live && !declining && (
         <div className="flex flex-wrap gap-2 mt-3">

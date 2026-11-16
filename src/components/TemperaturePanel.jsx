@@ -20,7 +20,7 @@ export default function TemperaturePanel({ readings, productType, excursion }) {
         <div className="flex flex-wrap gap-1">
           {list.slice(-24).map((r) => (
             <span key={r.id} title={`${formatTime(r.recorded_at)} EAT · ${r.source}`}
-              className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${isExcursion(r.temp_c, productType, r) ? 'bg-status-crimson text-white' : 'bg-bg-inset border border-border-warm'}`}>
+              className={`font-mono text-xs px-1.5 py-0.5 rounded ${isExcursion(r.temp_c, productType, r) ? 'bg-status-crimson text-white' : 'bg-bg-inset border border-border-warm'}`}>
               {Number(r.temp_c).toFixed(1)}
             </span>
           ))}

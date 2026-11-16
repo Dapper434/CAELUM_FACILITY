@@ -105,7 +105,7 @@ export default function InventoryPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="font-mono text-xs font-semibold break-all">{u.unit_code}</div>
-                    <div className="text-[11px] text-slate-600">{u.lot_number || '—'}</div>
+                    <div className="text-xs text-slate-600">{u.lot_number || '—'}</div>
                   </div>
                   <StatusBadge value={u.status} />
                 </div>

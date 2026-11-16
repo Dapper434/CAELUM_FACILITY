@@ -20,13 +20,13 @@ function SummaryStrip({ summary }) {
       <div className="text-xs font-semibold mb-1">Last {summary.window}: {summary.total} events · {summary.important} important</div>
       <div className="flex flex-wrap gap-1.5">
         {cats.map(([cat, n]) => (
-          <span key={cat} className="text-[11px] px-2 py-0.5 rounded-full bg-bg-inset border border-border-warm">
+          <span key={cat} className="text-xs px-2 py-0.5 rounded-full bg-bg-inset border border-border-warm">
             {categoryLabel(cat)} · {n}
           </span>
         ))}
       </div>
       {summary.top_actions?.length > 0 && (
-        <div className="text-[11px] text-slate-600 mt-1 truncate">
+        <div className="text-xs text-slate-600 mt-1 truncate">
           Top: {summary.top_actions.slice(0, 4).map((t) => `${actionLabel(t.action)} (${t.count})`).join(' · ')}
         </div>
       )}

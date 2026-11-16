@@ -25,7 +25,7 @@ export default function StageTimeline({ transfer }) {
             </span>
             <div>
               <div className={`text-xs font-semibold ${i === current ? 'text-brand-cobalt' : 'text-slate-700'}`}>{humanize(s)}</div>
-              <div className="text-[10px] text-slate-600">{at(s) ? formatDateTime(at(s)) : ''}</div>
+              <div className="text-xs text-slate-600">{at(s) ? formatDateTime(at(s)) : ''}</div>
             </div>
           </li>
         );

@@ -25,7 +25,7 @@ export function toneFor(value) {
 export default function StatusBadge({ value }) {
   if (!value) return null;
   return (
-    <span className={`inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${TONES[toneFor(value)]}`}>
+    <span className={`inline-block text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${TONES[toneFor(value)]}`}>
       {humanize(value)}
     </span>
   );

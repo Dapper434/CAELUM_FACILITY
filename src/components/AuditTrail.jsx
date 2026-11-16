@@ -21,8 +21,8 @@ function Detail({ entry, onClose }) {
           <div><span className="text-slate-600">Actor </span>{entry.actor_role || '—'}</div>
           <div><span className="text-slate-600">Entity </span>{entry.entity_type || '—'} {entry.entity_id ? String(entry.entity_id).slice(0, 8) : ''}</div>
         </div>
-        <pre className="bg-bg-inset rounded-lg p-2 overflow-x-auto text-[11px]">{JSON.stringify(entry.payload || {}, null, 2)}</pre>
-        <div className="font-mono text-[10px] text-slate-600 break-all">hash {entry.hash}</div>
+        <pre className="bg-bg-inset rounded-lg p-2 overflow-x-auto text-xs">{JSON.stringify(entry.payload || {}, null, 2)}</pre>
+        <div className="font-mono text-xs text-slate-600 break-all">hash {entry.hash}</div>
       </aside>
     </div>
   );

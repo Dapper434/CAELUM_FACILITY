@@ -32,7 +32,7 @@ export function SealCheck({ transferId, onChecked }) {
           ? <span className="flex items-center gap-1 text-xs font-bold text-emerald-text"><CheckCircle2 className="w-4 h-4" /> Matches</span>
           : <span className="flex items-center gap-1 text-xs font-bold text-crimson-text"><XCircle className="w-4 h-4" /> Does not match</span>)}
       </div>
-      {result && <div className="text-[11px] text-slate-600 mt-1">Checked {formatDateTime(result.checked_at)} · logged to custody</div>}
+      {result && <div className="text-xs text-slate-600 mt-1">Checked {formatDateTime(result.checked_at)} · logged to custody</div>}
     </form>
   );
 }
