@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { inventoryApi } from '../api/inventory';
 import { useAction } from '../hooks/useAction';
 import { Button, ErrorBanner } from './ui';
-
-function toLocalInput(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+import { toLocalInput } from '../utils/format';
 
 /** Only changed fields plus the required reason; null when nothing changed. */
 export function toCorrectionPayload(unit, form) {

@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { redirectFor } from '../lib/session';
 import { Button, ErrorBanner } from '../components/ui';
 import PasswordInput from '../components/PasswordInput';
+import BrandMark from '../components/BrandMark';
 
 export const RESET_SENT = 'If that email exists, we sent a link to reset the password.';
 
@@ -60,7 +61,7 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center p-4">
       <form onSubmit={onSubmit} className="card w-full max-w-sm p-6 space-y-4">
         <div className="flex items-center gap-3">
-          <span className="w-9 h-9 rounded-xl bg-brand-burgundy flex items-center justify-center text-white font-extrabold">C</span>
+          <BrandMark className="w-9 h-9" />
           <div>
             <h1 className="text-lg font-extrabold text-slate-900">CAELUM Facility</h1>
             <p className="text-xs text-slate-600">Sign in with your hospital account</p>

@@ -49,3 +49,13 @@ export function humanize(value) {
   if (!value) return '';
   return String(value).replace(/_/g, ' ').replace(/^./, (ch) => ch.toUpperCase());
 }
+
+/** Value for a datetime-local input, in the browser's local zone. */
+export function toLocalInput(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+

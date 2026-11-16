@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCountdown, formatDateTime, formatEta, formatTemp, humanize, msUntil } from './format';
+import { formatCountdown, formatDateTime, formatEta, formatTemp, humanize, msUntil, toLocalInput } from './format';
 
 describe('format helpers', () => {
   it('renders times in Nairobi', () => {
@@ -24,5 +24,14 @@ describe('format helpers', () => {
   it('formats temperatures and labels', () => {
     expect(formatTemp(4)).toBe('4.0 °C');
     expect(humanize('in_transit')).toBe('In transit');
+  });
+});
+
+describe('toLocalInput', () => {
+  it('formats a timestamp for a datetime-local field and treats missing values as blank', () => {
+    expect(toLocalInput(null)).toBe('');
+    expect(toLocalInput('not-a-date')).toBe('');
+    const v = toLocalInput('2026-11-16T18:05:00');
+    expect(v).toMatch(/^2026-11-16T\d{2}:05$/);
   });
 });

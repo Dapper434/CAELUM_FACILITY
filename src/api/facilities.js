@@ -1,4 +1,5 @@
 import { http } from '../lib/apiClient';
+import { buildQuery } from '../lib/http';
 import { config } from '../lib/config';
 import { getAccessToken } from '../lib/supabase';
 
@@ -30,12 +31,7 @@ export const facilitiesApi = {
     http.get(`/facilities/${id}/audit/summary`, { window: opts.window || '7d' }),
   async auditExport(id, opts = {}) {
     const access = await getAccessToken();
-    const qs = new URLSearchParams();
-    Object.entries(facilityAuditQuery({ ...opts, limit: opts.limit || 2000 })).forEach(([k, v]) => {
-      if (v === undefined || v === null || v === '') return;
-      qs.set(k, String(v));
-    });
-    const res = await fetch(`${config.apiBaseUrl}/facilities/${id}/audit/export?${qs}`, {
+    const res = await fetch(`${config.apiBaseUrl}/facilities/${id}/audit/export${buildQuery(facilityAuditQuery({ ...opts, limit: opts.limit || 2000 }))}`, {
       headers: access ? { Authorization: `Bearer ${access}` } : {},
     });
     if (!res.ok) {
