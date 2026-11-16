@@ -26,7 +26,7 @@ export function ChangePasswordCard() {
   }
   return (
     <Card title="Change password" className="max-w-xl">
-      {saved && <p role="status" className="text-sm text-status-emerald mb-2">Password updated.</p>}
+      {saved && <p role="status" className="text-sm text-emerald-text mb-2">Password updated.</p>}
       <PasswordForm onSubmit={save} submitLabel="Change password" />
     </Card>
   );
@@ -70,12 +70,12 @@ export default function SettingsPage() {
                 {f.multiline
                   ? <textarea id={`st-${f.key}`} rows={3} className="input" value={form[f.key]} placeholder={f.placeholder} onChange={(e) => { setForm({ ...form, [f.key]: e.target.value }); setSaved(false); }} aria-invalid={Boolean(fieldErrors[f.key])} />
                   : <input id={`st-${f.key}`} className="input" value={form[f.key]} placeholder={f.placeholder} onChange={(e) => { setForm({ ...form, [f.key]: e.target.value }); setSaved(false); }} aria-invalid={Boolean(fieldErrors[f.key])} />}
-                {fieldErrors[f.key] && <p className="text-xs text-status-crimson mt-1">{fieldErrors[f.key]}</p>}
+                {fieldErrors[f.key] && <p className="text-xs text-crimson-text mt-1">{fieldErrors[f.key]}</p>}
               </div>
             ))}
             <div className="flex items-center gap-3">
               <Button type="submit" busy={save.busy}>Save contact details</Button>
-              {saved && <span role="status" className="flex items-center gap-1 text-xs font-bold text-status-emerald"><CheckCircle2 className="w-4 h-4" /> Saved</span>}
+              {saved && <span role="status" className="flex items-center gap-1 text-xs font-bold text-emerald-text"><CheckCircle2 className="w-4 h-4" /> Saved</span>}
             </div>
           </form>
         )}

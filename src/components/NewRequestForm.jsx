@@ -40,7 +40,7 @@ export default function NewRequestForm({ onCreated }) {
             <option value="">Select…</option>
             {BLOOD_GROUPS.map((g) => <option key={g}>{g}</option>)}
           </select>
-          {groupError && <p className="text-xs text-status-crimson mt-1">{groupError}</p>}</div>
+          {groupError && <p className="text-xs text-crimson-text mt-1">{groupError}</p>}</div>
         <div><label className="label" htmlFor="nr-units">Units</label>
           <input id="nr-units" type="number" min="1" className="input" value={form.units_requested} onChange={set('units_requested')} required /></div>
         <div><label className="label" htmlFor="nr-product">Product</label>

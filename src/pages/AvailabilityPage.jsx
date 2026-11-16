@@ -44,7 +44,7 @@ export default function AvailabilityPage() {
             card={(r) => (
               <div className="space-y-1" data-testid="availability-card">
                 <div className="font-semibold text-sm">{r.facility_name}</div>
-                <div className="text-xs text-slate-500">{r.county || '—'}{r.distance_km != null ? ` · ${r.distance_km} km` : ''}</div>
+                <div className="text-xs text-slate-600">{r.county || '—'}{r.distance_km != null ? ` · ${r.distance_km} km` : ''}</div>
                 <div className="text-sm"><span className="font-bold">{r.units_available}</span> units · {r.expiring_within_72h} expiring ≤72h</div>
                 <div className="text-xs text-slate-600">Earliest {formatDateTime(r.earliest_expiry)}</div>
               </div>

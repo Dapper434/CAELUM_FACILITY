@@ -11,10 +11,10 @@ export default function TemperaturePanel({ readings, productType, excursion }) {
   return (
     <div>
       <div className="flex items-center gap-3 mb-2">
-        <Thermometer className={`w-5 h-5 ${excursion ? 'text-status-crimson' : 'text-brand-cobalt'}`} />
+        <Thermometer className={`w-5 h-5 ${excursion ? 'text-crimson-text' : 'text-brand-cobalt'}`} />
         <div className="text-lg font-bold">{latest ? formatTemp(latest.temp_c) : '—'}</div>
-        {band && <span className="text-xs text-slate-500">Safe band {band[0]}–{band[1]} °C</span>}
-        {excursion && <span className="text-xs font-bold text-status-crimson">Excursion recorded</span>}
+        {band && <span className="text-xs text-slate-600">Safe band {band[0]}–{band[1]} °C</span>}
+        {excursion && <span className="text-xs font-bold text-crimson-text">Excursion recorded</span>}
       </div>
       {list.length === 0 ? <Empty>No readings yet.</Empty> : (
         <div className="flex flex-wrap gap-1">

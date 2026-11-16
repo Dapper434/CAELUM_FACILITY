@@ -29,10 +29,10 @@ export function SealCheck({ transferId, onChecked }) {
         <input id="seal-check" className="input font-mono max-w-xs" value={entered} onChange={(e) => { setEntered(e.target.value); setResult(null); }} placeholder="SEAL-…" required />
         <Button type="submit" variant="ghost" busy={busy} disabled={!entered.trim()}>Check seal</Button>
         {result && (result.match
-          ? <span className="flex items-center gap-1 text-xs font-bold text-status-emerald"><CheckCircle2 className="w-4 h-4" /> Matches</span>
-          : <span className="flex items-center gap-1 text-xs font-bold text-status-crimson"><XCircle className="w-4 h-4" /> Does not match</span>)}
+          ? <span className="flex items-center gap-1 text-xs font-bold text-emerald-text"><CheckCircle2 className="w-4 h-4" /> Matches</span>
+          : <span className="flex items-center gap-1 text-xs font-bold text-crimson-text"><XCircle className="w-4 h-4" /> Does not match</span>)}
       </div>
-      {result && <div className="text-[11px] text-slate-400 mt-1">Checked {formatDateTime(result.checked_at)} · logged to custody</div>}
+      {result && <div className="text-[11px] text-slate-600 mt-1">Checked {formatDateTime(result.checked_at)} · logged to custody</div>}
     </form>
   );
 }
@@ -45,7 +45,7 @@ function DropOffCode({ transfer }) {
     <div>
       <div className="label">Drop-off code (give to the courier at handover)</div>
       <div className="font-mono text-3xl font-extrabold tracking-[0.3em] text-brand-navy" data-testid="otp">{otp.data.otp_code}</div>
-      <div className="text-xs text-slate-500">Valid until {formatDateTime(otp.data.expires_at)}</div>
+      <div className="text-xs text-slate-600">Valid until {formatDateTime(otp.data.expires_at)}</div>
     </div>
   );
 }
@@ -79,7 +79,7 @@ export default function RecipientCustodyPanel({ transfer, onChange }) {
       {SEAL_CHECK_STAGES.includes(stage) && <SealCheck transferId={transfer.id} onChecked={onChange} />}
       {stage === 'delivered' && !transfer.received_confirmed_at && <ConfirmReceipt transfer={transfer} onDone={onChange} />}
       {transfer.received_confirmed_at && (
-        <p className="text-sm text-status-emerald font-semibold">Receipt confirmed {formatDateTime(transfer.received_confirmed_at)} · {transfer.receipt_condition}</p>
+        <p className="text-sm text-emerald-text font-semibold">Receipt confirmed {formatDateTime(transfer.received_confirmed_at)} · {transfer.receipt_condition}</p>
       )}
       {stage === 'courier_assigned' && <p className="text-sm text-slate-600">{courierStatusLabel(transfer)}.</p>}
       {stage === 'accepted' && <p className="text-sm text-slate-600">The donor is packing. The drop-off code appears once the cooler is sealed.</p>}

@@ -26,7 +26,7 @@ function SummaryStrip({ summary }) {
         ))}
       </div>
       {summary.top_actions?.length > 0 && (
-        <div className="text-[11px] text-slate-500 mt-1 truncate">
+        <div className="text-[11px] text-slate-600 mt-1 truncate">
           Top: {summary.top_actions.slice(0, 4).map((t) => `${actionLabel(t.action)} (${t.count})`).join(' · ')}
         </div>
       )}
@@ -144,7 +144,7 @@ export default function AuditPage() {
           />
         )}
         {loaded && entries.length === 0 && importantOnly && (
-          <p className="text-xs text-slate-500 mt-2">No important events in this window. Turn off “Important only” to see everything.</p>
+          <p className="text-xs text-slate-600 mt-2">No important events in this window. Turn off “Important only” to see everything.</p>
         )}
         {next !== null && (
           <div className="mt-4">

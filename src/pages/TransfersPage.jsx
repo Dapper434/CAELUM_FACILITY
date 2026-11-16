@@ -25,13 +25,13 @@ export default function TransfersPage() {
     { header: 'Role', cell: (t) => humanize(transferRole(t, facilityId)) || 'Unknown' },
     { header: 'Blood', className: 'font-bold', cell: (t) => `${t.quantity} × ${t.blood_group}` },
     { header: 'Stage', cell: (t) => (<><StatusBadge value={t.stage} />{courierStatusLabel(t) && <div className="text-[11px] text-slate-600 mt-0.5">{courierStatusLabel(t)}</div>}</>) },
-    { header: 'Temp', className: (t) => (t.temperature_excursion ? 'text-status-crimson font-bold' : ''), cell: (t) => formatTemp(t.temperature_c) },
+    { header: 'Temp', className: (t) => (t.temperature_excursion ? 'text-crimson-text font-bold' : ''), cell: (t) => formatTemp(t.temperature_c) },
     { header: 'Updated', className: 'whitespace-nowrap', cell: (t) => formatDateTime(t.updated_at) },
   ];
   // className as function isn't supported — fix Temp column
   columns[4] = {
     header: 'Temp',
-    cell: (t) => <span className={t.temperature_excursion ? 'text-status-crimson font-bold' : ''}>{formatTemp(t.temperature_c)}</span>,
+    cell: (t) => <span className={t.temperature_excursion ? 'text-crimson-text font-bold' : ''}>{formatTemp(t.temperature_c)}</span>,
   };
   return (
     <div>
@@ -56,7 +56,7 @@ export default function TransfersPage() {
                 <div className="text-sm font-bold">{t.quantity} × {t.blood_group}</div>
                 <div className="text-xs text-slate-600">{humanize(transferRole(t, facilityId)) || 'Unknown'} · {formatTemp(t.temperature_c)}</div>
                 {courierStatusLabel(t) && <div className="text-[11px] text-slate-600">{courierStatusLabel(t)}</div>}
-                <div className="text-xs text-slate-500">{formatDateTime(t.updated_at)}</div>
+                <div className="text-xs text-slate-600">{formatDateTime(t.updated_at)}</div>
               </Link>
             )}
           />

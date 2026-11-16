@@ -66,7 +66,7 @@ export default function RequestDetailPage() {
               {cands.data?.rationale?.text && <p className="text-sm text-slate-600 mb-3">{cands.data.rationale.text}</p>}
               <CandidateList candidates={cands.data?.candidates} onOffer={sendOffer} busy={action.busy} canOffer />
               {(cands.data?.policies || []).length > 0 && (
-                <div className="mt-3 text-xs text-slate-500">Policies: {cands.data.policies.map((p) => `${p.title} §${p.section_ref || ''}`).join(' · ')}</div>
+                <div className="mt-3 text-xs text-slate-600">Policies: {cands.data.policies.map((p) => `${p.title} §${p.section_ref || ''}`).join(' · ')}</div>
               )}
             </>
           )}

@@ -41,7 +41,7 @@ export default function DashboardPage() {
     <div>
       <PageHeader title={facility?.name || 'Overview'} subtitle={facility ? `${facility.county} · MFL ${facility.mfl_code}` : 'Hospital overview'} />
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Stat to="/forecast" label="Open alerts" value={d.alerts} tone="text-status-crimson" />
+        <Stat to="/forecast" label="Open alerts" value={d.alerts} tone="text-crimson-text" />
         <Stat to="/forecast" label="Suggested requests" value={d.suggested} tone="text-accent-yellow" />
         <Stat to="/requests" label="Open requests" value={d.open} tone="text-brand-cobalt" />
         <Stat to="/offers" label="Offers to answer" value={d.incoming} tone="text-brand-burgundy" />

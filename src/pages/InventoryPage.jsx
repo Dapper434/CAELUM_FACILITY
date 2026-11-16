@@ -16,7 +16,7 @@ const EDITABLE = ['available', 'expired', 'discarded'];
 
 function UnitActions({ unit, busy, editing, onStatus, onToggleCorrect }) {
   if (!EDITABLE.includes(unit.status)) {
-    return <span className="text-xs text-slate-400">Locked</span>;
+    return <span className="text-xs text-slate-600">Locked</span>;
   }
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
@@ -60,7 +60,7 @@ export default function InventoryPage() {
     {
       header: 'Unit',
       className: 'font-mono text-xs',
-      cell: (u) => (<><span className="break-all">{u.unit_code}</span><div className="text-slate-400">{u.lot_number}</div></>),
+      cell: (u) => (<><span className="break-all">{u.unit_code}</span><div className="text-slate-600">{u.lot_number}</div></>),
     },
     { header: 'Group', className: 'font-bold', cell: (u) => u.blood_group },
     { header: 'Product', cell: (u) => productLabel(u.product_type) },
@@ -105,13 +105,13 @@ export default function InventoryPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="font-mono text-xs font-semibold break-all">{u.unit_code}</div>
-                    <div className="text-[11px] text-slate-500">{u.lot_number || '—'}</div>
+                    <div className="text-[11px] text-slate-600">{u.lot_number || '—'}</div>
                   </div>
                   <StatusBadge value={u.status} />
                 </div>
                 <div className="text-sm">
                   <span className="font-bold">{u.blood_group}</span>
-                  <span className="text-slate-500"> · {productLabel(u.product_type)}</span>
+                  <span className="text-slate-600"> · {productLabel(u.product_type)}</span>
                 </div>
                 <div className="text-xs text-slate-600 flex flex-wrap gap-x-3 gap-y-1">
                   <span>Expiry {formatDateTime(u.expiry_date)}</span>

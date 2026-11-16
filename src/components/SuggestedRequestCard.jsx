@@ -30,10 +30,10 @@ export default function SuggestedRequestCard({ request, onChange }) {
         <div className="text-sm font-bold">{request.blood_group} · {request.request_code}</div>
         <StatusBadge value={request.urgency} />
       </div>
-      <p className="text-xs text-slate-500 mt-1">
+      <p className="text-xs text-slate-600 mt-1">
         On hand {snap.units_on_hand ?? '—'} · {snap.days_of_cover ?? '—'} days of cover · avg {snap.average_daily_demand ?? '—'}/day
       </p>
-      {!groupOk && <p className="text-xs text-status-crimson mt-1">This suggestion has no valid blood group. Dismiss it and create a request instead.</p>}
+      {!groupOk && <p className="text-xs text-crimson-text mt-1">This suggestion has no valid blood group. Dismiss it and create a request instead.</p>}
       <ErrorBanner error={error} />
       <div className="flex flex-wrap items-end gap-2 mt-2">
         <div className="w-20"><label className="label" htmlFor={`u-${request.id}`}>Units</label>

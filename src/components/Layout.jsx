@@ -37,7 +37,7 @@ function NavList({ onNavigate, id }) {
           {({ isActive }) => (
             <>
               {isActive && <span className="absolute left-0 inset-y-0 w-1 bg-brand-burgundy" aria-hidden />}
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-accent-yellow' : 'text-slate-400'}`} aria-hidden />
+              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-accent-yellow' : 'text-slate-600'}`} aria-hidden />
               <span className="truncate">{label}</span>
             </>
           )}
@@ -85,7 +85,7 @@ export default function Layout() {
           <span className="w-8 h-8 rounded-xl bg-brand-burgundy flex items-center justify-center text-white font-extrabold shrink-0">C</span>
           <div className="min-w-0">
             <div className="text-sm font-extrabold text-slate-900 tracking-tight truncate">CAELUM Facility</div>
-            <div className="text-[11px] text-slate-500 truncate">{facility ? `${facility.name} · ${facility.level_label || ''}` : me?.email || ''}</div>
+            <div className="text-[11px] text-slate-600 truncate">{facility ? `${facility.name} · ${facility.level_label || ''}` : me?.email || ''}</div>
           </div>
         </div>
         <button type="button" onClick={signOut} className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-brand-burgundy shrink-0">
@@ -98,7 +98,7 @@ export default function Layout() {
         <div className="md:hidden fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label="Navigation menu">
           <button type="button" className="absolute inset-0 bg-black/40" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
           <aside id={panelId} className="absolute inset-y-0 left-0 w-[min(18rem,85vw)] bg-bg-surface border-r border-border-warm shadow-xl p-4 overflow-y-auto">
-            <div className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-1 mb-3">Hospital operations</div>
+            <div className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 px-1 mb-3">Hospital operations</div>
             <NavList onNavigate={() => setMenuOpen(false)} id={`${panelId}-nav`} />
           </aside>
         </div>
@@ -106,7 +106,7 @@ export default function Layout() {
 
       <div className="flex flex-col md:flex-row flex-1 min-w-0">
         <aside className="hidden md:block w-60 shrink-0 bg-bg-surface border-r border-border-warm p-3">
-          <div className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-2 mb-2">Hospital operations</div>
+          <div className="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 px-2 mb-2">Hospital operations</div>
           <NavList id="desktop-nav" />
         </aside>
         <main className="flex-1 p-3 sm:p-6 max-w-6xl w-full min-w-0">

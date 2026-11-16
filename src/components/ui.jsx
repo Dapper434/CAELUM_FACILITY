@@ -42,7 +42,7 @@ export function PageHeader({ title, subtitle, actions }) {
     <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
       <div>
         <h1 className="text-xl font-extrabold text-slate-900">{title}</h1>
-        {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
+        {subtitle && <p className="text-sm text-slate-600 mt-0.5">{subtitle}</p>}
       </div>
       {actions && <div className="flex gap-2">{actions}</div>}
     </div>
@@ -61,14 +61,14 @@ export function ErrorBanner({ error }) {
 
 export function Loading({ label = 'Loading…' }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-slate-500 py-6">
+    <div className="flex items-center gap-2 text-sm text-slate-600 py-6">
       <Loader2 className="w-4 h-4 animate-spin" /> {label}
     </div>
   );
 }
 
 export function Empty({ children }) {
-  return <p className="text-sm text-slate-500 py-4">{children}</p>;
+  return <p className="text-sm text-slate-600 py-4">{children}</p>;
 }
 
 /** Shown while a sign-in or API call has taken over 5 s (Render cold start). */

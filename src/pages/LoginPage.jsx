@@ -63,7 +63,7 @@ export default function LoginPage() {
           <span className="w-9 h-9 rounded-xl bg-brand-burgundy flex items-center justify-center text-white font-extrabold">C</span>
           <div>
             <h1 className="text-lg font-extrabold text-slate-900">CAELUM Facility</h1>
-            <p className="text-xs text-slate-500">Sign in with your hospital account</p>
+            <p className="text-xs text-slate-600">Sign in with your hospital account</p>
           </div>
         </div>
         

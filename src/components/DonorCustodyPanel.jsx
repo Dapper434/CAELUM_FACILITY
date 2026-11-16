@@ -146,15 +146,15 @@ export function QrDisplay({ transfer }) {
         <div className="label">Seal number</div>
         <div className="font-mono text-lg font-bold">{d.seal_number}</div>
         <div className="text-xs text-slate-600" data-testid="qr-expiry">
-          {d.expired ? <span className="font-bold text-status-crimson">Expired {formatDateTime(d.expires_at)}</span>
+          {d.expired ? <span className="font-bold text-crimson-text">Expired {formatDateTime(d.expires_at)}</span>
             : <>Valid until {formatDateTime(d.expires_at)} · <Countdown until={d.expires_at} label="" /></>}
-          {d.reissued && <span className="ml-2 text-[11px] text-slate-400">reissued</span>}
+          {d.reissued && <span className="ml-2 text-[11px] text-slate-600">reissued</span>}
         </div>
         <ErrorBanner error={regen.error} />
         {canRefresh && (
           <Button variant="ghost" busy={regen.busy} onClick={regenerate}>Regenerate QR</Button>
         )}
-        <p className="text-xs text-slate-500 max-w-xs">Show this code to the courier at pickup. They scan it in the CAELUM Courier app (Start pickup, then Scan QR) and type the seal number. After regenerating, only the newest code works.</p>
+        <p className="text-xs text-slate-600 max-w-xs">Show this code to the courier at pickup. They scan it in the CAELUM Courier app (Start pickup, then Scan QR) and type the seal number. After regenerating, only the newest code works.</p>
       </div>
     </div>
   );

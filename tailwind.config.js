@@ -16,6 +16,9 @@ export default {
         'accent-yellow': '#F59E0B',
         'status-crimson': '#DC2626',
         'status-emerald': '#059669',
+        'amber-text': '#92400E',
+        'emerald-text': '#047857',
+        'crimson-text': '#B91C1C',
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],

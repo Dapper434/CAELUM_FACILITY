@@ -23,7 +23,7 @@ export default function PasswordInput({ className = '', ...inputProps }) {
         aria-label={visible ? 'Hide password' : 'Show password'}
         aria-pressed={visible}
         aria-controls={inputProps.id}
-        className="absolute inset-y-0 right-1 my-auto h-8 w-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cobalt"
+        className="absolute inset-y-0 right-1 my-auto h-8 w-8 flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cobalt"
       >
         {visible ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
       </button>

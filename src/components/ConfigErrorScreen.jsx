@@ -11,7 +11,7 @@ export default function ConfigErrorScreen({ errors }) {
         <ul className="list-disc ml-5 text-sm text-slate-700 space-y-1">
           {errors.map((e) => <li key={e}>{e}</li>)}
         </ul>
-        <p className="text-xs text-slate-500 mt-3">Set the variables in <code>.env</code> (local) or the hosting provider&apos;s environment, then rebuild.</p>
+        <p className="text-xs text-slate-600 mt-3">Set the variables in <code>.env</code> (local) or the hosting provider&apos;s environment, then rebuild.</p>
       </div>
     </div>
   );

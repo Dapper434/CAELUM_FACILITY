@@ -28,17 +28,17 @@ export default function OfferCard({ offer, incoming, onChange }) {
   return (
     <div className="rounded-xl border border-border-warm bg-bg-surface p-4 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="text-sm font-bold">{offer.units_requested} × {offer.blood_group} <span className="font-normal text-slate-500">{productLabel(offer.product_type)}</span></div>
+        <div className="text-sm font-bold">{offer.units_requested} × {offer.blood_group} <span className="font-normal text-slate-600">{productLabel(offer.product_type)}</span></div>
         <div className="flex items-center gap-2"><StatusBadge value={offer.status} />{live && <Countdown until={offer.expires_at} />}</div>
       </div>
       <div className="text-xs text-slate-600 mt-1">
         <span className="font-mono">{offer.offer_code}</span> · {offer.distance_km} km · ETA {formatEta(offer.eta_minutes, offer.eta_source)} · cover after {offer.post_transfer_cover_days} days
       </div>
       {offer.proposed_unit_codes?.length > 0 && (
-        <div className="text-[11px] font-mono text-slate-500 mt-1">Units: {offer.proposed_unit_codes.join(', ')}</div>
+        <div className="text-[11px] font-mono text-slate-600 mt-1">Units: {offer.proposed_unit_codes.join(', ')}</div>
       )}
-      {offer.status === 'held' && <div className="text-[11px] text-slate-500 mt-1">Held {formatDateTime(offer.held_at)} · extensions used {offer.hold_extensions}/1</div>}
-      {offer.decline_reason && <div className="text-[11px] text-slate-500 mt-1">Declined: {offer.decline_reason}{offer.decline_note ? ` — ${offer.decline_note}` : ''}</div>}
+      {offer.status === 'held' && <div className="text-[11px] text-slate-600 mt-1">Held {formatDateTime(offer.held_at)} · extensions used {offer.hold_extensions}/1</div>}
+      {offer.decline_reason && <div className="text-[11px] text-slate-600 mt-1">Declined: {offer.decline_reason}{offer.decline_note ? ` — ${offer.decline_note}` : ''}</div>}
       <ErrorBanner error={error} />
       {incoming && live && !declining && (
         <div className="flex flex-wrap gap-2 mt-3">

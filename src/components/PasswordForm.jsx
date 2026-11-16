@@ -48,7 +48,7 @@ export default function PasswordForm({ onSubmit, submitLabel = 'Save password' }
         <label className="label" htmlFor="confirm-password">Confirm password</label>
         <PasswordInput id="confirm-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
       </div>
-      {invalid && <p className="text-xs text-status-crimson" role="status">{invalid}</p>}
+      {invalid && <p className="text-xs text-crimson-text" role="status">{invalid}</p>}
       <Button type="submit" busy={busy}>{submitLabel}</Button>
     </form>
   );
