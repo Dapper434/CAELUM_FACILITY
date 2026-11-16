@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route, Routes } from 'react-router';
 import { WakeHint } from './components/ui';
+import { RouteErrorBoundary } from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
@@ -22,6 +23,7 @@ export default function App() {
   return (
     <>
     <WakeHint />
+    <RouteErrorBoundary>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       {/* Public: invite and recovery links land here with or without a session. */}
@@ -41,6 +43,7 @@ export default function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
+    </RouteErrorBoundary>
     </>
   );
 }

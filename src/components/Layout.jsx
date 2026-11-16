@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
+import { RouteErrorBoundary } from './ErrorBoundary';
 import {
   LayoutDashboard, Droplets, Search, TrendingUp, ClipboardList, Inbox, Truck, ShieldCheck, Settings, LogOut, Menu, X,
 } from 'lucide-react';
@@ -113,7 +114,9 @@ export default function Layout() {
           {me && me.role !== 'facility' && (
             <ErrorBanner error={{ message: `Signed in as ${me.role}. This app is for facility accounts.` }} />
           )}
-          <Outlet />
+          <RouteErrorBoundary>
+            <Outlet />
+          </RouteErrorBoundary>
         </main>
       </div>
     </div>
