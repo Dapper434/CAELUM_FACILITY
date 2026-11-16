@@ -6,20 +6,30 @@ import { useAuth } from '../context/AuthContext';
 import { Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui';
 import StatusBadge from '../components/StatusBadge';
 import ResponsiveTable from '../components/ResponsiveTable';
+import PageControls from '../components/PageControls';
 import { formatDateTime, formatTemp, humanize } from '../utils/format';
 import { transferRole } from '../utils/roles';
 import { courierStatusLabel, transferPollInterval } from '../utils/transferStatus';
+import { PAGE_SIZE, clampedPage, pageParams, readPage } from '../lib/pagination';
 
 export default function TransfersPage() {
   const [activeOnly, setActiveOnly] = useState(true);
+  const [page, setPage] = useState(1);
   const { facilityId } = useAuth();
   const [interval, setPoll] = useState(0);
   const { data, error, loading } = useAsync(async () => {
-    const rows = await transfersApi.list(activeOnly ? { active: 'true' } : {});
-    setPoll(transferPollInterval(rows || []));
-    return rows;
-  }, [activeOnly], { interval });
-  const rows = data || [];
+    const raw = await transfersApi.list({
+      ...(activeOnly ? { active: 'true' } : {}),
+      ...pageParams(page),
+    });
+    const parsed = readPage(raw, { page });
+    const next = clampedPage(page, parsed.total, parsed.page_size);
+    if (next !== page) setPage(next);
+    setPoll(transferPollInterval(parsed.items)); // poll the current page only
+    return parsed;
+  }, [activeOnly, page], { interval });
+  const changeActive = (value) => { setActiveOnly(value); setPage(1); };
+  const rows = data?.items || [];
   const columns = [
     { header: 'Code', className: 'font-mono text-xs', cell: (t) => <Link className="text-brand-cobalt font-semibold" to={`/transfers/${t.id}`}>{t.transfer_code}</Link> },
     { header: 'Role', cell: (t) => humanize(transferRole(t, facilityId)) || 'Unknown' },
@@ -38,7 +48,7 @@ export default function TransfersPage() {
       <PageHeader title="Transfers" subtitle="Transfers where this facility is donor or recipient" />
       <Card>
         <label className="flex items-center gap-2 text-xs font-semibold mb-3">
-          <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} /> Active only
+          <input type="checkbox" checked={activeOnly} onChange={(e) => changeActive(e.target.checked)} /> Active only
         </label>
         <ErrorBanner error={error} />
         {loading ? <Loading /> : (
@@ -59,6 +69,16 @@ export default function TransfersPage() {
                 <div className="text-xs text-slate-600">{formatDateTime(t.updated_at)}</div>
               </Link>
             )}
+          />
+        )}
+        {!loading && data && (
+          <PageControls
+            page={data.page}
+            pageSize={data.page_size || PAGE_SIZE}
+            total={data.total}
+            hasMore={data.has_more}
+            onPage={setPage}
+            noun="transfers"
           />
         )}
       </Card>

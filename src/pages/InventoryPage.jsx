@@ -8,7 +8,9 @@ import BloodFilters from '../components/BloodFilters';
 import AddUnitsForm from '../components/AddUnitsForm';
 import CorrectUnitForm from '../components/CorrectUnitForm';
 import ResponsiveTable from '../components/ResponsiveTable';
+import PageControls from '../components/PageControls';
 import { formatDateTime, formatTemp } from '../utils/format';
+import { PAGE_SIZE, clampedPage, pageParams, readPage } from '../lib/pagination';
 import { productLabel } from '../utils/constants';
 
 const STATUSES = ['', 'available', 'reserved', 'in_transit', 'transferred', 'expired', 'discarded'];
@@ -44,10 +46,18 @@ function UnitActions({ unit, busy, editing, onStatus, onToggleCorrect }) {
 
 export default function InventoryPage() {
   const [filters, setFilters] = useState({ blood_group: '', product_type: '', status: '' });
+  const [page, setPage] = useState(1);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
-  const { data, error, loading, reload } = useAsync(() => inventoryApi.list(filters), [JSON.stringify(filters)]);
+  const { data, error, loading, reload } = useAsync(async () => {
+    const raw = await inventoryApi.list({ ...filters, ...pageParams(page) });
+    const parsed = readPage(raw, { page });
+    const next = clampedPage(page, parsed.total, parsed.page_size);
+    if (next !== page) setPage(next);
+    return parsed;
+  }, [JSON.stringify(filters), page]);
   const action = useAction();
+  const changeFilters = (next) => { setFilters(next); setPage(1); };
 
   async function setStatus(unit, status) {
     const ok = await action.run(() => inventoryApi.setStatus(unit.id, status));
@@ -55,7 +65,7 @@ export default function InventoryPage() {
   }
   const toggleCorrect = (id) => setEditing((cur) => (cur === id ? null : id));
 
-  const units = data || [];
+  const units = data?.items || [];
   const columns = [
     {
       header: 'Unit',
@@ -85,10 +95,10 @@ export default function InventoryPage() {
       {showAdd && <AddUnitsForm onAdded={() => { setShowAdd(false); reload(); }} />}
       <Card>
         <div className="flex flex-wrap items-end gap-3 mb-3">
-          <BloodFilters value={filters} onChange={setFilters} allowAny />
+          <BloodFilters value={filters} onChange={changeFilters} allowAny />
           <div className="min-w-[8rem]">
             <label className="label" htmlFor="inv-status">Status</label>
-            <select id="inv-status" className="input" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
+            <select id="inv-status" className="input" value={filters.status} onChange={(e) => changeFilters({ ...filters, status: e.target.value })}>
               {STATUSES.map((s) => <option key={s} value={s}>{s || 'Any'}</option>)}
             </select>
           </div>

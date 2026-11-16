@@ -6,16 +6,26 @@ import { Button, Card, Empty, ErrorBanner, Loading, PageHeader } from '../compon
 import StatusBadge from '../components/StatusBadge';
 import NewRequestForm from '../components/NewRequestForm';
 import ResponsiveTable from '../components/ResponsiveTable';
+import PageControls from '../components/PageControls';
 import { formatDateTime } from '../utils/format';
+import { PAGE_SIZE, clampedPage, pageParams, readPage } from '../lib/pagination';
 
 const FILTERS = ['', 'suggested', 'open', 'offered', 'matched', 'fulfilled', 'cancelled', 'dismissed'];
 
 export default function RequestsPage() {
   const [status, setStatus] = useState('');
+  const [page, setPage] = useState(1);
   const [showNew, setShowNew] = useState(false);
   const navigate = useNavigate();
-  const { data, error, loading } = useAsync(() => requestsApi.list(status), [status], { interval: 30000 });
-  const rows = data || [];
+  const { data, error, loading } = useAsync(async () => {
+    const raw = await requestsApi.list({ status, ...pageParams(page) });
+    const parsed = readPage(raw, { page });
+    const next = clampedPage(page, parsed.total, parsed.page_size);
+    if (next !== page) setPage(next);
+    return parsed;
+  }, [status, page], { interval: 30000 });
+  const changeStatus = (value) => { setStatus(value); setPage(1); };
+  const rows = data?.items || [];
   const columns = [
     { header: 'Code', className: 'font-mono text-xs', cell: (r) => <Link className="text-brand-cobalt font-semibold" to={`/requests/${r.id}`}>{r.request_code}</Link> },
     { header: 'Group', className: 'font-bold', cell: (r) => r.blood_group },
@@ -32,7 +42,7 @@ export default function RequestsPage() {
       <Card>
         <div className="mb-3 w-full max-w-xs">
           <label className="label" htmlFor="rq-status">Status</label>
-          <select id="rq-status" className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select id="rq-status" className="input" value={status} onChange={(e) => changeStatus(e.target.value)}>
             {FILTERS.map((s) => <option key={s} value={s}>{s || 'Any'}</option>)}
           </select>
         </div>
@@ -53,6 +63,16 @@ export default function RequestsPage() {
                 <div className="text-xs text-slate-600">{formatDateTime(r.created_at)}{r.source === 'forecast' ? ' · forecast' : ''}</div>
               </Link>
             )}
+          />
+        )}
+        {!loading && data && (
+          <PageControls
+            page={data.page}
+            pageSize={data.page_size || PAGE_SIZE}
+            total={data.total}
+            hasMore={data.has_more}
+            onPage={setPage}
+            noun="requests"
           />
         )}
       </Card>
