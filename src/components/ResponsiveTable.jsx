@@ -1,8 +1,9 @@
 import React from 'react';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 /**
- * Desktop: classic table. Mobile (< md): stacked cards so actions stay on-screen.
- * Pass either `card` (preferred) or rely on columns alone (label: value rows).
+ * Desktop (md+): classic table. Mobile: stacked cards so actions stay on-screen.
+ * Only one surface is mounted, chosen via matchMedia('(min-width: 768px)').
  */
 export default function ResponsiveTable({
   columns,
@@ -13,10 +14,11 @@ export default function ResponsiveTable({
   afterRow,
   'aria-label': ariaLabel,
 }) {
+  const desktop = useMediaQuery('(min-width: 768px)');
   if (!rows?.length) return empty;
+  if (!desktop) {
   return (
-    <>
-      <ul className="md:hidden space-y-3" aria-label={ariaLabel}>
+      <ul className="space-y-3" aria-label={ariaLabel}>
         {rows.map((row) => {
           const key = keyOf(row);
           return (
@@ -36,7 +38,10 @@ export default function ResponsiveTable({
           );
         })}
       </ul>
-      <div className="hidden md:block overflow-x-auto">
+  );
+  }
+  return (
+      <div className="overflow-x-auto">
         <table className="w-full" aria-label={ariaLabel}>
           <thead>
             <tr>{columns.map((col) => <th key={col.header} className="th">{col.header}</th>)}</tr>
@@ -58,7 +63,6 @@ export default function ResponsiveTable({
           </tbody>
         </table>
       </div>
-    </>
   );
 }
 
