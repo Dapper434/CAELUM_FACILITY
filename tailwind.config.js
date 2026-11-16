@@ -1,24 +1,29 @@
+import tokens from './src/theme/tokens.js';
+
+/** Shared token as a CSS variable, with the light-theme hex from tokens.js as fallback. */
+const caelum = (name) => `var(--caelum-${name}, ${tokens[name]})`;
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        'bg-canvas': '#F6F3ED',
-        'bg-surface': '#FFFFFF',
-        'bg-inset': '#FAF7F2',
-        'border-warm': '#E6DFD2',
-        'brand-cobalt': '#0E3A8C',
-        'brand-navy': '#092357',
-        'brand-burgundy': '#7A1A2B',
-        'brand-burgundy-hover': '#5E1321',
-        'brand-burgundy-light': '#FDF2F4',
-        'accent-yellow': '#F59E0B',
-        'status-crimson': '#DC2626',
-        'status-emerald': '#059669',
-        'amber-text': '#92400E',
-        'emerald-text': '#047857',
-        'crimson-text': '#B91C1C',
+        'bg-canvas': caelum('bg-canvas'),
+        'bg-surface': caelum('bg-surface'),
+        'bg-inset': caelum('bg-inset'),
+        'border-warm': caelum('border'),
+        'brand-cobalt': caelum('cobalt'),
+        'brand-navy': caelum('navy'),
+        'brand-burgundy': caelum('burgundy'),
+        'brand-burgundy-hover': caelum('burgundy-hover'),
+        'brand-burgundy-light': caelum('burgundy-light'),
+        'accent-yellow': caelum('amber'),
+        'status-crimson': caelum('crimson'),
+        'status-emerald': caelum('emerald'),
+        'amber-text': caelum('amber-text'),
+        'emerald-text': caelum('emerald-text'),
+        'crimson-text': caelum('crimson-text'),
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],

@@ -1,0 +1,72 @@
+/**
+ * CAELUM shared colour tokens.
+ * Canonical source for the Admin, Facility and Courier apps. Copy this file
+ * and tokens.js together, verbatim. Do not add app-specific imports.
+ *
+ * Load this stylesheet before other app styles.
+ * Toggle clinical low-light by adding `.dark` or `.clinical-mode` on <html>
+ * (or any ancestor). Semantic surface and text variables then switch;
+ * brand and status fill colours stay the same so solid buttons do not drift.
+ */
+
+:root {
+  /* Palette — fills (unchanged in low-light) */
+  --caelum-cream: #F6F3ED;
+  --caelum-cobalt: #0E3A8C;
+  --caelum-navy: #092357;
+  --caelum-burgundy: #7A1A2B;
+  --caelum-burgundy-hover: #5E1321;
+  --caelum-burgundy-light: #FDF2F4;
+  --caelum-burgundy-dark: #54121E;
+  --caelum-amber: #F59E0B;
+  --caelum-emerald: #059669;
+  --caelum-crimson: #DC2626;
+  --caelum-header-end: #4A101C;
+  --caelum-white: #FFFFFF;
+  --caelum-text-on-accent: #0F172A;
+
+  /* Surfaces and text — light */
+  --caelum-bg-canvas: #F6F3ED;
+  --caelum-bg-surface: #FFFFFF;
+  --caelum-bg-inset: #FAF7F2;
+  --caelum-border: #E6DFD2;
+  --caelum-text: #1E293B;
+  --caelum-text-heading: #0F172A;
+  --caelum-text-secondary: #334155;
+  --caelum-text-muted: #475569;
+  --caelum-amber-text: #92400E;
+  --caelum-emerald-text: #047857;
+  --caelum-crimson-text: #B91C1C;
+  --caelum-cobalt-text: #0E3A8C;
+  --caelum-burgundy-text: #7A1A2B;
+  --caelum-scrollbar-thumb: #D8D0C2;
+  --caelum-header-link: #BFDBFE;
+
+  /* Low-light aliases (fixed values, for explicit use) */
+  --caelum-bg-canvas-dark: #1E2433;
+  --caelum-bg-surface-dark: #283042;
+  --caelum-bg-inset-dark: #1A202E;
+  --caelum-border-dark: #374259;
+  --caelum-cobalt-lowlight: #2554A8;
+  --caelum-burgundy-lowlight: #9B2C42;
+  --caelum-text-lowlight: #E2E8F0;
+  --caelum-text-lowlight-secondary: #94A3B8;
+}
+
+.dark,
+.clinical-mode {
+  --caelum-bg-canvas: #1E2433;
+  --caelum-bg-surface: #283042;
+  --caelum-bg-inset: #1A202E;
+  --caelum-border: #374259;
+  --caelum-text: #E2E8F0;
+  --caelum-text-heading: #F1F5F9;
+  --caelum-text-secondary: #CBD5E1;
+  --caelum-text-muted: #94A3B8;
+  --caelum-amber-text: #FCD34D;
+  --caelum-emerald-text: #34D399;
+  --caelum-crimson-text: #F87171;
+  --caelum-cobalt-text: #60A5FA;
+  --caelum-burgundy-text: #FDA4AF;
+  --caelum-scrollbar-thumb: #374259;
+}

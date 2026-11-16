@@ -7,6 +7,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import ConfigErrorScreen from './components/ConfigErrorScreen.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { config } from './lib/config';
+import './theme/tokens.css';
 import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
