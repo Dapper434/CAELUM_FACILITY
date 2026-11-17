@@ -5,6 +5,7 @@ import { RouteErrorBoundary } from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import InventoryPage from './pages/InventoryPage';
 import AvailabilityPage from './pages/AvailabilityPage';
@@ -28,7 +29,8 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       {/* Public: invite and recovery links land here with or without a session. */}
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+      {/* "/" is the public landing page when signed out, and the dashboard when signed in. */}
+      <Route element={<ProtectedRoute publicHome={<LandingPage />}><Layout /></ProtectedRoute>}>
         <Route index element={<DashboardPage />} />
         <Route path="inventory" element={<InventoryPage />} />
         <Route path="availability" element={<AvailabilityPage />} />

@@ -29,3 +29,80 @@
 }
 
 .leaflet-container { border-radius: 1rem; }
+
+/* ---------- Public landing page (pages/LandingPage.jsx) ----------
+   rgb(9 35 87) below is the `navy` token (#092357); written out because the
+   fades need alpha stops and the token is a plain hex variable. */
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.landing) { scroll-behavior: smooth; }
+}
+
+/* White focus ring on the dark bands; cobalt (the app default) disappears on navy. */
+.landing-dark a:focus-visible,
+.landing-dark button:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; }
+
+.landing-nav { background-color: var(--caelum-navy); transition: background-color 200ms ease, backdrop-filter 200ms ease; }
+.landing-nav.is-scrolled {
+  background-color: rgb(9 35 87 / 0.82);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  backdrop-filter: saturate(140%) blur(12px);
+}
+
+/* Phone: photo band fades down into navy. Wider: photo on the right fades left into navy. */
+.landing-hero-fade { background: linear-gradient(180deg, rgb(9 35 87 / 0) 45%, rgb(9 35 87 / 1) 100%); }
+@media (min-width: 768px) {
+  .landing-hero-fade {
+    background: linear-gradient(90deg, rgb(9 35 87 / 1) 0%, rgb(9 35 87 / 0.75) 22%, rgb(9 35 87 / 0.2) 50%, rgb(9 35 87 / 0) 70%),
+                linear-gradient(0deg, rgb(9 35 87 / 0.35) 0%, rgb(9 35 87 / 0) 30%);
+  }
+}
+
+@keyframes caelum-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.landing-rise { animation: caelum-rise 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.landing-rise-2 { animation-delay: 80ms; }
+.landing-rise-3 { animation-delay: 160ms; }
+.landing-rise-4 { animation-delay: 240ms; }
+
+/* Story cards step up from left to right on wide screens. */
+@media (min-width: 1024px) {
+  .landing-stagger-0 { margin-top: 4.5rem; }
+  .landing-stagger-1 { margin-top: 3rem; }
+  .landing-stagger-2 { margin-top: 1.5rem; }
+}
+
+/* Hospital marquee: two identical rows slide left by their own width, so the loop is seamless. */
+.landing-marquee {
+  display: flex;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.landing-marquee-track {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: max-content;
+  gap: 3.5rem;
+  padding-right: 3.5rem;
+  animation: caelum-marquee 80s linear infinite;
+}
+@keyframes caelum-marquee { to { transform: translateX(-100%); } }
+.landing-marquee:hover .landing-marquee-track,
+.landing-network:focus-within .landing-marquee-track,
+.landing-marquee.is-paused .landing-marquee-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-rise { animation: none; }
+  .landing-marquee { -webkit-mask-image: none; mask-image: none; padding: 0 1.25rem; }
+  .landing-marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    flex-shrink: 1;
+    min-width: 0;
+    padding-right: 0;
+    gap: 1.5rem 2.5rem;
+  }
+  .landing-marquee-track[aria-hidden="true"], .landing-marquee-toggle { display: none; }
+}

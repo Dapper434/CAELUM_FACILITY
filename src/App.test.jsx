@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 const auth = { session: null, loading: false, me: null, facility: null, facilityId: null, error: null, signOut: vi.fn(), signIn: vi.fn(), configured: true };
@@ -32,6 +32,20 @@ describe('routing', () => {
     auth.session = null;
     at('/transfers/t1');
     expect(screen.getByText('Sign in with your hospital account')).toBeInTheDocument();
+  });
+
+  it('shows the public landing page at / when signed out', () => {
+    auth.session = null;
+    at('/');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Blood, where it’s needed.');
+    expect(screen.queryByText('Sign in with your hospital account')).toBeNull();
+  });
+
+  it('sends signed-in users at / straight to their dashboard', async () => {
+    at('/');
+    expect(screen.getByText('Hospital overview')).toBeInTheDocument();
+    expect(screen.queryByText(/Blood, where it’s needed/)).toBeNull();
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); }); // let the dashboard's loads settle
   });
 
   it('renders a /transfers/:id deep link', async () => {
