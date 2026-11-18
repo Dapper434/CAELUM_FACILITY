@@ -30,7 +30,7 @@ function DemandBars({ days, compact }) {
       {days.map((d) => (
         <div key={d.date} title={`${d.date}: ${d.units}`} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
           {!compact && <span className="text-xs font-mono text-slate-600">{d.units.toFixed(1)}</span>}
-          <div className="w-full bg-brand-cobalt/80 rounded-t" style={{ height: `${(d.units / max) * 90}%` }} />
+          <div className="w-full bg-brand-cobalt opacity-80 rounded-t" style={{ height: `${(d.units / max) * 90}%` }} />
           {!compact && <span className="text-xs text-slate-600">{d.date.slice(5)}</span>}
         </div>
       ))}

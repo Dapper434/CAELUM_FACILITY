@@ -29,7 +29,7 @@ function NavList({ onNavigate, id }) {
           to={to}
           end={end}
           onClick={onNavigate}
-          className={({ isActive }) => `relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold border overflow-hidden ${
+          className={({ isActive }) => `relative flex items-center gap-2.5 min-h-11 md:min-h-0 px-3 py-2.5 rounded-xl text-xs font-semibold border overflow-hidden ${
             isActive
               ? 'bg-brand-cobalt text-white border-brand-cobalt'
               : 'bg-bg-inset border-border-warm text-slate-800 hover:border-brand-burgundy/40'
@@ -75,7 +75,7 @@ export default function Layout() {
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             type="button"
-            className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-border-warm bg-bg-inset text-slate-800"
+            className="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-xl border border-border-warm bg-bg-inset text-slate-800"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
             aria-controls={panelId}
@@ -89,7 +89,7 @@ export default function Layout() {
             <div className="text-xs text-slate-600 truncate">{facility ? `${facility.name} · ${facility.level_label || ''}` : me?.email || ''}</div>
           </div>
         </div>
-        <button type="button" onClick={signOut} className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-brand-burgundy shrink-0">
+        <button type="button" onClick={signOut} className="flex items-center justify-center gap-1.5 min-h-11 min-w-11 px-2 md:min-h-0 md:min-w-0 md:px-0 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-burgundy shrink-0">
           <LogOut className="w-4 h-4" aria-hidden /> <span className="hidden xs:inline sm:inline">Sign out</span>
         </button>
       </header>

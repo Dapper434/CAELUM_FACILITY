@@ -22,7 +22,7 @@
 
 @layer components {
   .card { @apply bg-bg-surface border border-border-warm rounded-2xl shadow-card; }
-  .input { @apply w-full rounded-xl border border-border-warm bg-bg-inset px-3 py-2 text-sm text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-cobalt focus-visible:ring-offset-1; }
+  .input { @apply w-full rounded-xl border border-border-warm bg-bg-inset min-h-11 md:min-h-0 px-3 py-2 text-base md:text-sm text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-cobalt focus-visible:ring-offset-1; }
   .label { @apply block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1; }
   .th { @apply text-left text-xs font-extrabold uppercase tracking-widest text-slate-600 px-3 py-2; }
   .td { @apply px-3 py-2 text-sm border-t border-border-warm; }
@@ -126,4 +126,14 @@
 .auth-strip-fade::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5rem;
   background: linear-gradient(to bottom, rgb(255 255 255 / 0), var(--caelum-bg-surface));
+}
+
+/* Phones: form fields at 16px so iOS Safari doesn't zoom on focus, and 44px tall
+   so they are easy to tap. !important beats per-control text-xs/text-sm utilities. */
+@media (max-width: 767.98px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea { font-size: 16px !important; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.sr-only),
+  select { min-height: 44px; }
 }
