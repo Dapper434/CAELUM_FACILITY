@@ -27,12 +27,15 @@ const TONES = {
   // Monochrome white on a dark band (landing page marquee).
   onDark: { tile: 'border-2 border-white/80 text-white', name: 'text-white' },
   // Full-colour mark on the dark sign-in panel: logo on a white tile, badge in the accent with a white ring.
-  panel: { tile: 'text-white ring-2 ring-white/90', name: 'text-white', logoWrap: 'bg-white rounded-2xl p-2 shadow-sm' },
+  panel: { tile: 'text-white ring-2 ring-white/90', name: 'text-white', logoWrap: 'bg-white rounded-2xl p-2 shadow-md' },
 };
 
+// `box` sizes give the logo a fixed square tile (crest fitted inside); the others size the logo by height.
 const SIZES = {
+  sm: { mark: 'h-9', tile: 'h-9 min-w-9 text-xs', name: 'text-sm' },
   md: { mark: 'h-12', tile: 'h-12 min-w-12 text-sm', name: 'text-sm' },
   lg: { mark: 'h-16', tile: 'h-16 min-w-16 text-lg', name: 'text-lg' },
+  xl: { box: 'w-[72px] h-[72px]', tile: 'w-[72px] h-[72px] rounded-2xl text-xl', name: 'text-xl lg:text-2xl' },
 };
 
 /**
@@ -40,19 +43,21 @@ const SIZES = {
  * Never pass a county emblem as `logo` (Facility logo rule, 02_DESIGN_SYSTEM.md).
  */
 export default function FacilityBadge({
-  name, code, logo, tone = 'accent', accent, size = 'md', showName = true, logoLoading = 'lazy', className = '',
+  name, code, logo, tone = 'accent', accent, size = 'md', showName = true, logoLoading = 'lazy', logoAlt, className = '',
 }) {
   const t = TONES[tone] || TONES.accent;
   const z = SIZES[size] || SIZES.md;
   const img = logo && (
-    <img src={logo} alt={showName ? '' : name} loading={logoLoading} decoding="async" className={`${z.mark} w-auto max-w-[12rem] object-contain shrink-0`} />
+    <img src={logo} alt={logoAlt ?? (showName ? '' : name)} loading={logoLoading} decoding="async"
+      className={z.box ? 'max-w-full max-h-full object-contain' : `${z.mark} w-auto max-w-[12rem] object-contain shrink-0`} />
   );
-  const mark = logo ? (t.logoWrap ? <span className={`shrink-0 inline-flex ${t.logoWrap}`}>{img}</span> : img) : (
+  const wrap = z.box ? `${z.box} items-center justify-center` : '';
+  const mark = logo ? (t.logoWrap ? <span className={`shrink-0 inline-flex ${wrap} ${t.logoWrap}`}>{img}</span> : img) : (
     <span
       aria-hidden={showName ? 'true' : undefined}
       aria-label={showName ? undefined : name}
       role={showName ? undefined : 'img'}
-      className={`${z.tile} px-1.5 shrink-0 rounded-xl inline-flex items-center justify-center font-extrabold tracking-wide ${t.tile}`}
+      className={`${z.tile} px-1.5 shrink-0 ${z.box ? '' : 'rounded-xl'} inline-flex items-center justify-center font-extrabold tracking-wide ${t.tile}`}
       style={tone === 'onDark' ? undefined : { backgroundColor: accent || 'var(--caelum-navy)' }}
     >
       {code || facilityInitials(name)}

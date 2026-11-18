@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 const auth = vi.hoisted(() => ({ resetPasswordForEmail: vi.fn() }));
@@ -43,6 +43,14 @@ describe('forgot password', () => {
   });
 });
 
+/** Email-first flow: type the email, Continue, then the password. */
+function signInWith(email, password) {
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: password } });
+  fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+}
+
 describe('after sign-in', () => {
   const routes = (entry) => render(
     <MemoryRouter initialEntries={[entry]}>
@@ -59,9 +67,7 @@ describe('after sign-in', () => {
     saveRedirect('recipient', '/requests/r1');
     authState.signIn = vi.fn(async () => ({ id: 'donor' }));
     routes({ pathname: '/login', state: { from: '/requests/r1' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'donor@x.ke' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pw' } });
-    fireEvent.click(screen.getByText('Sign in'));
+    signInWith('donor@x.ke', 'pw');
     expect(await screen.findByText('Home')).toBeInTheDocument();
   });
 
@@ -69,9 +75,7 @@ describe('after sign-in', () => {
     saveRedirect('donor', '/requests/r9');
     authState.signIn = vi.fn(async () => ({ id: 'donor' }));
     routes('/login');
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'donor@x.ke' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pw' } });
-    fireEvent.click(screen.getByText('Sign in'));
+    signInWith('donor@x.ke', 'pw');
     expect(await screen.findByText('Request page')).toBeInTheDocument();
   });
 
@@ -87,6 +91,8 @@ describe('sign-in password field', () => {
   it('has a show/hide toggle', () => {
     authState.session = null;
     render(<MemoryRouter><LoginPage /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'nurse@hospital.ke' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(screen.getByLabelText('Password')).toHaveAttribute('autocomplete', 'current-password');
     fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
     expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'text');
@@ -123,7 +129,7 @@ describe('sign-in brand panel (?facility=<MFL code>)', () => {
     const imgs = [...panel().querySelectorAll('img')].map((i) => i.getAttribute('src'));
     expect(imgs.some((s) => /logos\/knh/.test(s))).toBe(true);
     expect(panel().querySelector('img.auth-duotone')).not.toBeNull();
-    expect(screen.getByText('Kenyatta National Hospital', { selector: 'form span' })).toBeInTheDocument();
+    expect(screen.queryByText(/^For /)).toBeNull(); // no separate "For <hospital>" line any more
   });
 
   it('uses an initials badge, never the county emblem, for an emblem-only hospital, with the neutral panel behind it', () => {
@@ -134,9 +140,133 @@ describe('sign-in brand panel (?facility=<MFL code>)', () => {
     expect(panel().querySelector('.auth-neutral')).not.toBeNull();
   });
 
-  it('keeps sign-in working the same with a facility code', () => {
+  it('keeps the email-first flow with a facility code', () => {
     at('?facility=90007');
-    expect(screen.getByText('Sign in')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   });
 });
+
+describe('email-first sign-in personalises step 2', () => {
+  beforeEach(() => { authState.session = null; authState.signIn = vi.fn(async () => ({ id: 'u' })); });
+  const at = (search = '') => render(<MemoryRouter initialEntries={[`/login${search}`]}><LoginPage /></MemoryRouter>);
+  const panel = () => screen.getByTestId('brand-panel');
+  const continueWith = (email) => {
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+  };
+
+  it('asks for the email only at step 1, on the neutral panel', () => {
+    at();
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Password')).toBeNull();
+    expect(panel().querySelector('.auth-neutral')).not.toBeNull();
+  });
+
+  it('recognises the hospital from the email and brands the password step', () => {
+    at();
+    continueWith(' KNH.bloodbank@caelum.demo ');
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    expect([...panel().querySelectorAll('img')].some((i) => /logos\/knh/.test(i.getAttribute('src')))).toBe(true);
+    expect(panel()).toHaveTextContent('Welcome back.');
+    expect(panel()).toHaveTextContent('Kenyatta National Hospital');
+    expect(screen.getByText('Signing in to Kenyatta National Hospital.')).toBeInTheDocument();
+    expect(screen.getByText('KNH.bloodbank@caelum.demo')).toBeInTheDocument(); // trimmed, shown as typed
+  });
+
+  it.each([
+    ['thika.lab@caelum.demo', 'TL5', 'Thika Level 5 Hospital'],
+    ['donor@caelum.demo', null, 'Nairobi Hospital Hub'],
+    ['recipient@caelum.demo', null, 'Mama Lucy Kibaki Hospital'],
+  ])('brands %s', (email, code, name) => {
+    at();
+    continueWith(email);
+    expect(panel()).toHaveTextContent(name);
+    if (code) expect(panel()).toHaveTextContent(code);
+  });
+
+  it('keeps unknown and look-alike emails neutral', () => {
+    at();
+    continueWith('knh.bloodbank@gmail.com');
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    expect(panel().querySelector('.auth-neutral')).not.toBeNull();
+    expect(panel()).not.toHaveTextContent('Kenyatta');
+  });
+
+  it.each([
+    ['admin2@caelum.demo', 'Admin console', 'https://caelum-console.vercel.app'],
+    ['courier7@caelum.demo', 'Courier app', 'https://caelum-courier.vercel.app'],
+  ])('points %s to its own app without blocking sign-in', (email, linkName, href) => {
+    at();
+    continueWith(email);
+    expect(screen.getByRole('link', { name: linkName })).toHaveAttribute('href', href);
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+  });
+
+  it('goes back to step 1 with Change, keeping the email', () => {
+    at();
+    continueWith('mtrh.lab@caelum.demo');
+    fireEvent.click(screen.getByRole('button', { name: 'Change email' }));
+    expect(screen.getByLabelText('Email')).toHaveValue('mtrh.lab@caelum.demo');
+    expect(screen.queryByLabelText('Password')).toBeNull();
+    expect(panel().querySelector('.auth-neutral')).not.toBeNull();
+  });
+
+  it('lets the email win over a ?facility link, and keeps the link brand for unknown emails', () => {
+    at('?facility=90007');
+    expect(panel()).toHaveTextContent('Moi Teaching and Referral Hospital');
+    continueWith('cgtrh.bloodbank@caelum.demo');
+    expect(panel()).toHaveTextContent('Coast General Teaching and Referral Hospital');
+    fireEvent.click(screen.getByRole('button', { name: 'Change email' }));
+    continueWith('someone@hospital.ke');
+    expect(panel()).toHaveTextContent('Moi Teaching and Referral Hospital');
+  });
+
+  it('asks for an email before continuing, and signs in with the typed email and password', async () => {
+    at();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.queryByLabelText('Password')).toBeNull(); // the required email field stops an empty Continue
+    continueWith('kcrh.lab@caelum.demo');
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await waitFor(() => expect(authState.signIn).toHaveBeenCalledWith('kcrh.lab@caelum.demo', 'secret'));
+  });
+});
+
+describe('password step header (Part B polish)', () => {
+  beforeEach(() => { authState.session = null; authState.signIn = vi.fn(); });
+  const at = (search = '') => render(<MemoryRouter initialEntries={[`/login${search}`]}><LoginPage /></MemoryRouter>);
+  const continueWith = (email) => {
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+  };
+  const form = () => document.querySelector('form');
+
+  it('shows the hospital crest and name in the card header, with no For line', () => {
+    at();
+    continueWith('knh.bloodbank@caelum.demo');
+    expect(within(form()).getByRole('img', { name: 'Kenyatta National Hospital logo' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Kenyatta National Hospital');
+    expect(within(form()).getByText('Sign in to CAELUM Facility')).toBeInTheDocument();
+    expect(within(form()).queryByText(/^For /)).toBeNull();
+    expect(within(form()).queryByText('Sign in with your hospital account')).toBeNull();
+    expect(screen.getByText('Signing in as')).toBeInTheDocument();
+  });
+
+  it('uses the initials badge in the header for a hospital without a logo', () => {
+    at();
+    continueWith('thika.lab@caelum.demo');
+    expect(within(form()).getByRole('img', { name: 'Thika Level 5 Hospital' })).toHaveTextContent('TL5');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Thika Level 5 Hospital');
+  });
+
+  it('keeps the CAELUM header on the email step and when the email matched no hospital', () => {
+    at('?facility=90001');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('CAELUM Facility');
+    continueWith('someone@hospital.ke');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('CAELUM Facility');
+    expect(within(form()).queryByRole('img', { name: /logo$/ })).toBeNull();
+  });
+});
+

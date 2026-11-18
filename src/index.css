@@ -118,6 +118,10 @@
     radial-gradient(45% 40% at 5% 95%, rgb(122 26 43 / 0.28), transparent 70%),
     radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px) 0 0 / 22px 22px;
 }
+/* Branding fades in when the hospital is recognised (email step) or changes. */
+@keyframes caelum-auth-fade { from { opacity: 0; } }
+.auth-fade-in { animation: caelum-auth-fade 200ms ease-out both; }
+@media (prefers-reduced-motion: reduce) { .auth-fade-in { animation: none; } }
 /* Phone strip: soft fade into the white form area below. */
 .auth-strip-fade::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5rem;

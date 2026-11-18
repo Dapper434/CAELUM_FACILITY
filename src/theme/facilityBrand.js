@@ -32,25 +32,27 @@ export const REGION_ACCENT = {
 };
 
 const F = (name, region, extra = {}) => ({ name, region, ...extra });
+/** The two staff accounts the extended seed creates per hospital (API/src/utils/seed_extended.py _users). */
+const demo = (key) => [`${key}.bloodbank`, `${key}.lab`];
 
 /** MFL code -> brand. Codes 90001-90012 are the extended seed's placeholders. */
 export const FACILITY_BRANDS = {
-  12345: F('Mama Lucy Kibaki Hospital', 'nairobi', { logo: mamaLucyLogo, banner: mamaLucyBanner }),
-  13023: F('Nairobi Hospital Hub', 'nairobi', { logo: nairobiLogo }),
+  12345: F('Mama Lucy Kibaki Hospital', 'nairobi', { logo: mamaLucyLogo, banner: mamaLucyBanner, emailLocals: ['recipient'] }),
+  13023: F('Nairobi Hospital Hub', 'nairobi', { logo: nairobiLogo, emailLocals: ['donor'] }),
   10603: F('Kiambu Level 5 Hospital', 'nairobi', { code: 'KL5' }),
   15340: F('Nakuru Level 5 Hospital', 'south_rift', { code: 'NL5' }),
-  90001: F('Kenyatta National Hospital', 'nairobi', { logo: knhLogo, banner: knhBanner }),
-  90002: F('Mbagathi County Hospital', 'nairobi', { logo: mbagathiLogo, banner: mbagathiBanner, nameInLogo: true }),
-  90003: F('Thika Level 5 Hospital', 'nairobi', { code: 'TL5' }),
-  90004: F('Machakos Level 5 Hospital', 'nairobi', { code: 'ML5' }),
-  90005: F('Naivasha County Referral Hospital', 'south_rift', { code: 'NCR' }),
-  90006: F('Narok County Referral Hospital', 'south_rift', { code: 'NRK' }),
-  90007: F('Moi Teaching and Referral Hospital', 'north_rift', { logo: mtrhLogo, banner: mtrhBanner }),
-  90008: F('Kapsabet County Referral Hospital', 'north_rift', { code: 'KPS' }),
-  90009: F('Coast General Teaching and Referral Hospital', 'coast', { logo: cgtrhLogo, banner: cgtrhBanner }),
-  90010: F('Port Reitz Sub-County Hospital', 'coast', { code: 'PRZ' }),
-  90011: F('Jaramogi Oginga Odinga Teaching and Referral Hospital', 'nyanza', { logo: jootrhLogo, banner: jootrhBanner }),
-  90012: F('Kisumu County Referral Hospital', 'nyanza', { logo: kcrhLogo }),
+  90001: F('Kenyatta National Hospital', 'nairobi', { logo: knhLogo, banner: knhBanner, emailLocals: demo('knh') }),
+  90002: F('Mbagathi County Hospital', 'nairobi', { logo: mbagathiLogo, banner: mbagathiBanner, nameInLogo: true, emailLocals: demo('mbagathi') }),
+  90003: F('Thika Level 5 Hospital', 'nairobi', { code: 'TL5', emailLocals: demo('thika') }),
+  90004: F('Machakos Level 5 Hospital', 'nairobi', { code: 'ML5', emailLocals: demo('machakos') }),
+  90005: F('Naivasha County Referral Hospital', 'south_rift', { code: 'NCR', emailLocals: demo('naivasha') }),
+  90006: F('Narok County Referral Hospital', 'south_rift', { code: 'NRK', emailLocals: demo('narok') }),
+  90007: F('Moi Teaching and Referral Hospital', 'north_rift', { logo: mtrhLogo, banner: mtrhBanner, emailLocals: demo('mtrh') }),
+  90008: F('Kapsabet County Referral Hospital', 'north_rift', { code: 'KPS', emailLocals: demo('kapsabet') }),
+  90009: F('Coast General Teaching and Referral Hospital', 'coast', { logo: cgtrhLogo, banner: cgtrhBanner, emailLocals: demo('cgtrh') }),
+  90010: F('Port Reitz Sub-County Hospital', 'coast', { code: 'PRZ', emailLocals: demo('portreitz') }),
+  90011: F('Jaramogi Oginga Odinga Teaching and Referral Hospital', 'nyanza', { logo: jootrhLogo, banner: jootrhBanner, emailLocals: demo('jootrh') }),
+  90012: F('Kisumu County Referral Hospital', 'nyanza', { logo: kcrhLogo, emailLocals: demo('kcrh') }),
 };
 
 /**
@@ -73,3 +75,32 @@ export function brandFor(facility) {
     accent: REGION_ACCENT[region] || tokens.navy,
   };
 }
+
+// ---------- Email-first sign-in (Round 2 Task 2; Kevin: "Option A", 18 Nov 2026) ----------
+// The app works the hospital out from the typed email itself and never asks the server, so it cannot reveal whether
+// an account exists. Only the demo domain (and, later, real hospital domains listed in `domains`) is matched, so
+// "knh.someone@gmail.com" does not pick up KNH branding.
+export const DEMO_EMAIL_DOMAIN = 'caelum.demo';
+
+/**
+ * What a typed email looks like: { kind: 'facility', mfl } | { kind: 'admin' } | { kind: 'courier' } | null (unknown).
+ * Demo accounts only, matched exactly: `<key>.bloodbank@caelum.demo` / `<key>.lab@caelum.demo` (key from the API seed), plus the older
+ * `donor@` (Nairobi Hospital Hub) and `recipient@` (Mama Lucy Kibaki). Real domains: add `domains: ['knh.or.ke']` to an entry.
+ */
+export function classifyEmail(email) {
+  const e = String(email || '').trim().toLowerCase();
+  const at = e.lastIndexOf('@');
+  if (at < 1 || at === e.length - 1) return null;
+  const local = e.slice(0, at);
+  const domain = e.slice(at + 1);
+  for (const [mfl, b] of Object.entries(FACILITY_BRANDS)) {
+    if ((b.domains || []).some((d) => domain === d || domain.endsWith(`.${d}`))) return { kind: 'facility', mfl };
+  }
+  if (domain !== DEMO_EMAIL_DOMAIN) return null;
+  if (/^admin\d*$/.test(local)) return { kind: 'admin' };
+  if (/^courier\d*$/.test(local)) return { kind: 'courier' };
+  // Exact demo account names only, so "knh.anything@caelum.demo" stays neutral (security review, 18 Nov 2026).
+  const hit = Object.entries(FACILITY_BRANDS).find(([, b]) => (b.emailLocals || []).includes(local));
+  return hit ? { kind: 'facility', mfl: hit[0] } : null;
+}
+

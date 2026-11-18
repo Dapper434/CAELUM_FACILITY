@@ -30,3 +30,33 @@ describe('facility brand table', () => {
     expect(brandFor(null)).toBeNull();
   });
 });
+
+describe('classifyEmail (email-first sign-in)', () => {
+  it('recognises the demo hospital accounts, case-insensitively', async () => {
+    const { classifyEmail } = await import('./facilityBrand');
+    expect(classifyEmail('knh.bloodbank@caelum.demo')).toEqual({ kind: 'facility', mfl: '90001' });
+    expect(classifyEmail(' MTRH.Lab@CAELUM.demo ')).toEqual({ kind: 'facility', mfl: '90007' });
+    expect(classifyEmail('portreitz.lab@caelum.demo')).toEqual({ kind: 'facility', mfl: '90010' });
+    expect(classifyEmail('donor@caelum.demo')).toEqual({ kind: 'facility', mfl: '13023' });
+    expect(classifyEmail('recipient@caelum.demo')).toEqual({ kind: 'facility', mfl: '12345' });
+  });
+
+  it('spots admin and courier demo accounts', async () => {
+    const { classifyEmail } = await import('./facilityBrand');
+    for (const e of ['admin@caelum.demo', 'admin3@caelum.demo']) expect(classifyEmail(e)).toEqual({ kind: 'admin' });
+    for (const e of ['courier@caelum.demo', 'courier10@caelum.demo']) expect(classifyEmail(e)).toEqual({ kind: 'courier' });
+  });
+
+  it('stays neutral for unknown, look-alike and malformed emails', async () => {
+    const { classifyEmail } = await import('./facilityBrand');
+    for (const e of ['knh.bloodbank@gmail.com', 'knh.attacker@caelum.demo', 'knh@caelum.demo', 'knh.lab.x@caelum.demo', 'nobody@caelum.demo', 'admin@knh.or.ke', 'knh', '@caelum.demo', 'x@', '', null]) {
+      expect(classifyEmail(e)).toBeNull();
+    }
+  });
+
+  it('has an email key for every hospital with demo staff accounts', async () => {
+    const { FACILITY_BRANDS } = await import('./facilityBrand');
+    const keyed = Object.entries(FACILITY_BRANDS).filter(([, b]) => b.emailLocals?.length).map(([m]) => m);
+    expect(keyed).toHaveLength(14); // 12 extended-seed hospitals + donor@ / recipient@; Kiambu and Nakuru have no staff accounts
+  });
+});
