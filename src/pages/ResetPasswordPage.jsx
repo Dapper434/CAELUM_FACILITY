@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router';
 import { supabase } from '../lib/supabase';
 import PasswordForm from '../components/PasswordForm';
 import { Loading } from '../components/ui';
+import BrandMark from '../components/BrandMark';
+import SignInBrandPanel from '../components/SignInBrandPanel';
 
 export const LINK_WAIT_MS = 4000;
 
@@ -37,18 +39,29 @@ export default function ResetPasswordPage() {
     navigate('/', { replace: true });
   }
 
+  // Same split layout as sign-in. Invite and recovery links carry no hospital code, so the panel is neutral.
   return (
-    <main className="min-h-screen flex items-center justify-center p-4">
-      <div className="card w-full max-w-sm p-6 space-y-4">
-        <h1 className="text-lg font-extrabold text-slate-900">Set your password</h1>
-        {state === 'waiting' && <Loading label="Checking your link…" />}
-        {state === 'ready' && <PasswordForm onSubmit={save} submitLabel="Save and continue" />}
-        {state === 'invalid' && (
-          <div className="space-y-3">
-            <p role="alert" className="text-sm text-brand-burgundy">This link is invalid or has expired. Request a new one to set your password.</p>
-            <Link to="/login?forgot=1" className="inline-block text-sm font-semibold text-brand-cobalt">Request a new link</Link>
+    <main className="min-h-screen bg-bg-surface md:grid md:grid-cols-2">
+      <SignInBrandPanel brand={null} />
+      <SignInBrandPanel brand={null} strip />
+      <div className="flex items-start md:items-center justify-center px-5 pt-6 pb-10 md:p-10 md:bg-bg-canvas">
+        <div className="w-full max-w-sm space-y-4 md:card md:p-8">
+          <div className="flex items-center gap-3">
+            <BrandMark className="w-9 h-9" />
+            <div>
+              <h1 className="text-lg font-extrabold text-slate-900">Set your password</h1>
+              <p className="text-xs text-slate-600">CAELUM Facility</p>
+            </div>
           </div>
-        )}
+          {state === 'waiting' && <Loading label="Checking your link…" />}
+          {state === 'ready' && <PasswordForm onSubmit={save} submitLabel="Save and continue" />}
+          {state === 'invalid' && (
+            <div className="space-y-3">
+              <p role="alert" className="text-sm text-brand-burgundy">This link is invalid or has expired. Request a new one to set your password.</p>
+              <Link to="/login?forgot=1" className="inline-flex items-center min-h-11 text-sm font-semibold text-brand-cobalt hover:underline underline-offset-2">Request a new link</Link>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

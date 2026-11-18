@@ -103,3 +103,40 @@ describe('sign-in landmarks', () => {
     expect(screen.getByRole('main').querySelector('main')).toBeNull();
   });
 });
+
+describe('sign-in brand panel (?facility=<MFL code>)', () => {
+  const at = (search) => render(<MemoryRouter initialEntries={[`/login${search}`]}><LoginPage /></MemoryRouter>);
+  const panel = () => screen.getByTestId('brand-panel');
+
+  it('shows the neutral CAELUM panel with no code or an unknown one', () => {
+    for (const search of ['', '?facility=99999']) {
+      const { unmount } = at(search);
+      expect(panel().querySelector('img')).toBeNull();
+      expect(panel().querySelector('.auth-neutral')).not.toBeNull();
+      expect(screen.queryByText(/^For /)).toBeNull();
+      unmount();
+    }
+  });
+
+  it('shows the official logo and the duotone banner for a hospital that has both', () => {
+    at('?facility=90001');
+    const imgs = [...panel().querySelectorAll('img')].map((i) => i.getAttribute('src'));
+    expect(imgs.some((s) => /logos\/knh/.test(s))).toBe(true);
+    expect(panel().querySelector('img.auth-duotone')).not.toBeNull();
+    expect(screen.getByText('Kenyatta National Hospital', { selector: 'form span' })).toBeInTheDocument();
+  });
+
+  it('uses an initials badge, never the county emblem, for an emblem-only hospital, with the neutral panel behind it', () => {
+    at('?facility=90003');
+    expect(panel()).toHaveTextContent('TL5');
+    expect(panel()).toHaveTextContent('Thika Level 5 Hospital');
+    expect(panel().querySelector('img')).toBeNull();
+    expect(panel().querySelector('.auth-neutral')).not.toBeNull();
+  });
+
+  it('keeps sign-in working the same with a facility code', () => {
+    at('?facility=90007');
+    expect(screen.getByText('Sign in')).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+  });
+});

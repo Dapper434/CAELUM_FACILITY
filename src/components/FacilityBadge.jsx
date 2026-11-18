@@ -26,6 +26,13 @@ const TONES = {
   accent: { tile: 'text-white', name: 'text-slate-900' },
   // Monochrome white on a dark band (landing page marquee).
   onDark: { tile: 'border-2 border-white/80 text-white', name: 'text-white' },
+  // Full-colour mark on the dark sign-in panel: logo on a white tile, badge in the accent with a white ring.
+  panel: { tile: 'text-white ring-2 ring-white/90', name: 'text-white', logoWrap: 'bg-white rounded-2xl p-2 shadow-sm' },
+};
+
+const SIZES = {
+  md: { mark: 'h-12', tile: 'h-12 min-w-12 text-sm', name: 'text-sm' },
+  lg: { mark: 'h-16', tile: 'h-16 min-w-16 text-lg', name: 'text-lg' },
 };
 
 /**
@@ -33,18 +40,20 @@ const TONES = {
  * Never pass a county emblem as `logo` (Facility logo rule, 02_DESIGN_SYSTEM.md).
  */
 export default function FacilityBadge({
-  name, code, logo, tone = 'accent', accent, showName = true, logoLoading = 'lazy', className = '',
+  name, code, logo, tone = 'accent', accent, size = 'md', showName = true, logoLoading = 'lazy', className = '',
 }) {
   const t = TONES[tone] || TONES.accent;
-  const mark = logo ? (
-    <img src={logo} alt={showName ? '' : name} loading={logoLoading} decoding="async" className="h-12 w-auto max-w-[9rem] object-contain shrink-0" />
-  ) : (
+  const z = SIZES[size] || SIZES.md;
+  const img = logo && (
+    <img src={logo} alt={showName ? '' : name} loading={logoLoading} decoding="async" className={`${z.mark} w-auto max-w-[12rem] object-contain shrink-0`} />
+  );
+  const mark = logo ? (t.logoWrap ? <span className={`shrink-0 inline-flex ${t.logoWrap}`}>{img}</span> : img) : (
     <span
       aria-hidden={showName ? 'true' : undefined}
       aria-label={showName ? undefined : name}
       role={showName ? undefined : 'img'}
-      className={`h-12 min-w-12 px-1.5 shrink-0 rounded-xl inline-flex items-center justify-center text-sm font-extrabold tracking-wide ${t.tile}`}
-      style={tone === 'accent' ? { backgroundColor: accent || 'var(--caelum-navy)' } : undefined}
+      className={`${z.tile} px-1.5 shrink-0 rounded-xl inline-flex items-center justify-center font-extrabold tracking-wide ${t.tile}`}
+      style={tone === 'onDark' ? undefined : { backgroundColor: accent || 'var(--caelum-navy)' }}
     >
       {code || facilityInitials(name)}
     </span>
@@ -52,7 +61,7 @@ export default function FacilityBadge({
   return (
     <span className={`inline-flex items-center gap-3 ${className}`}>
       {mark}
-      {showName && <span className={`text-sm font-semibold leading-tight ${t.name}`}>{name}</span>}
+      {showName && <span className={`${z.name} font-semibold leading-tight ${t.name}`}>{name}</span>}
     </span>
   );
 }

@@ -106,3 +106,20 @@
   }
   .landing-marquee-track[aria-hidden="true"], .landing-marquee-toggle { display: none; }
 }
+
+/* ---------- Sign-in brand panel (pages/LoginPage.jsx) ----------
+   Shared deep-blue duotone: the photo is greyscaled, takes the navy's hue via luminosity blending,
+   and sits at ~14% strength, so every hospital reads calm and part of one product. */
+.auth-duotone { filter: grayscale(1) contrast(1.05); mix-blend-mode: luminosity; opacity: 0.14; }
+/* Neutral CAELUM panel when a hospital has no photo (or no ?facility= code). Token values: cobalt, burgundy. */
+.auth-neutral {
+  background:
+    radial-gradient(60% 50% at 85% 10%, rgb(14 58 140 / 0.6), transparent 70%),
+    radial-gradient(45% 40% at 5% 95%, rgb(122 26 43 / 0.28), transparent 70%),
+    radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px) 0 0 / 22px 22px;
+}
+/* Phone strip: soft fade into the white form area below. */
+.auth-strip-fade::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5rem;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0), var(--caelum-bg-surface));
+}

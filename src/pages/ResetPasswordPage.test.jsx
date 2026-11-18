@@ -65,6 +65,15 @@ describe('ResetPasswordPage', () => {
     expect(screen.getByText('Request a new link')).toHaveAttribute('href', '/login?forgot=1');
   });
 
+  it('uses the same split layout as sign-in, with the neutral CAELUM panel and one h1', () => {
+    window.history.replaceState(null, '', '/reset-password#error_code=otp_expired');
+    show();
+    expect(screen.getByTestId('brand-panel').querySelector('.auth-neutral')).not.toBeNull();
+    expect(screen.getByTestId('brand-strip')).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Set your password');
+  });
+
   it('shows the expired state when no session arrives', async () => {
     vi.useFakeTimers();
     show();
