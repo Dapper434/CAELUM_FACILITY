@@ -24,14 +24,31 @@ export default {
         'amber-text': caelum('amber-text'),
         'emerald-text': caelum('emerald-text'),
         'crimson-text': caelum('crimson-text'),
+
+        // Facility dashboard design direction. Deliberately app-local: the
+        // canonical tokens.js/tokens.css files are shared verbatim with the
+        // Admin and Courier apps and are contract-tested.
+        'clinic-navy': '#102C46',
+        'clinic-navy-strong': '#0B2239',
+        'clinic-teal': '#087F8C',
+        'clinic-teal-hover': '#066975',
+        'clinic-teal-soft': '#E7F3F4',
+        'clinic-canvas': '#F5F8FA',
+        'clinic-border': '#E2E8F0',
+        'clinic-text': '#172B3A',
+        'clinic-muted': '#64748B',
+        'clinic-critical': '#D94848',
+        'clinic-warning': '#E6A23C',
+        'clinic-success': '#25865B',
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       boxShadow: {
-        card: '0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
-        'card-hover': '0 4px 6px -1px rgba(14, 58, 140, 0.08), 0 2px 4px -2px rgba(14, 58, 140, 0.05)',
+        card: '0 1px 2px 0 rgba(15, 34, 51, 0.04)',
+        'card-hover': '0 6px 16px -8px rgba(15, 34, 51, 0.18), 0 2px 4px -2px rgba(15, 34, 51, 0.06)',
+        panel: '0 1px 2px rgba(15, 34, 51, 0.03), 0 18px 40px -32px rgba(15, 34, 51, 0.28)',
       },
     },
   },
