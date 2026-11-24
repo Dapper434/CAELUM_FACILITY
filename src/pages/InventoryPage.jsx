@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { inventoryApi } from '../api/inventory';
 import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
@@ -13,7 +14,7 @@ import { formatDateTime, formatTemp } from '../utils/format';
 import { PAGE_SIZE, clampedPage, pageParams, readPage } from '../lib/pagination';
 import { productLabel } from '../utils/constants';
 
-const STATUSES = ['', 'available', 'reserved', 'in_transit', 'transferred', 'expired', 'discarded'];
+const STATUSES = ['', 'available', 'reserved', 'in_transit', 'quarantined', 'transferred', 'expired', 'discarded'];
 const EDITABLE = ['available', 'expired', 'discarded'];
 
 function UnitActions({ unit, busy, editing, onStatus, onToggleCorrect }) {
@@ -45,7 +46,13 @@ function UnitActions({ unit, busy, editing, onStatus, onToggleCorrect }) {
 }
 
 export default function InventoryPage() {
-  const [filters, setFilters] = useState({ blood_group: '', product_type: '', status: '' });
+  const [searchParams] = useSearchParams();
+  const requestedStatus = searchParams.get('status') || '';
+  const [filters, setFilters] = useState({
+    blood_group: '',
+    product_type: '',
+    status: STATUSES.includes(requestedStatus) ? requestedStatus : '',
+  });
   const [page, setPage] = useState(1);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);

@@ -2,12 +2,21 @@ import React from 'react';
 import { humanize } from '../utils/format';
 
 const TONES = {
-  red: 'bg-status-crimson text-white',
-  amber: 'bg-accent-yellow text-slate-900',
-  green: 'bg-status-emerald text-white',
-  blue: 'bg-brand-cobalt text-white',
-  grey: 'bg-slate-200 text-slate-700',
-  burgundy: 'bg-brand-burgundy text-white',
+  red: 'border-red-200/80 bg-red-50 text-red-700',
+  amber: 'border-amber-200/80 bg-amber-50 text-amber-800',
+  green: 'border-emerald-200/80 bg-emerald-50 text-emerald-700',
+  blue: 'border-sky-200/80 bg-sky-50 text-sky-800',
+  grey: 'border-slate-200 bg-slate-50 text-slate-600',
+  burgundy: 'border-rose-200/80 bg-rose-50 text-rose-700',
+};
+
+const DOTS = {
+  red: 'bg-red-500',
+  amber: 'bg-amber-500',
+  green: 'bg-emerald-500',
+  blue: 'bg-sky-500',
+  grey: 'bg-slate-400',
+  burgundy: 'bg-rose-500',
 };
 
 const MAP = {
@@ -24,8 +33,10 @@ export function toneFor(value) {
 
 export default function StatusBadge({ value }) {
   if (!value) return null;
+  const tone = toneFor(value);
   return (
-    <span className={`inline-block text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${TONES[toneFor(value)]}`}>
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.04em] ${TONES[tone]}`}>
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${DOTS[tone]}`} aria-hidden />
       {humanize(value)}
     </span>
   );
