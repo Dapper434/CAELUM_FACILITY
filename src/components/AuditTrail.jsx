@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { formatDateTime } from '../utils/format';
 import { actionLabel, groupConsecutive, isImportantAction } from '../utils/auditLabels';
 import { Empty } from './ui';
 
 function Detail({ entry, onClose }) {
+  useEffect(() => {
+    if (!entry) return undefined;
+    const onKey = (event) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      const tag = event.target?.tagName;
+      if (event.target?.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      event.preventDefault();
+      onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [entry, onClose]);
+
   if (!entry) return null;
   return (
-    <div className="fixed inset-0 z-40 flex justify-end" role="dialog" aria-label="Audit entry detail">
+    <div className="fixed inset-0 z-40 flex justify-end" role="dialog" aria-modal="true" aria-label="Audit entry detail">
       <button type="button" className="flex-1 bg-black/30" aria-label="Close detail" onClick={onClose} />
-      <aside className="w-full max-w-md h-full bg-white shadow-xl border-l border-border-warm p-4 overflow-y-auto space-y-3">
+      <aside className="h-full w-full max-w-md space-y-3 overflow-y-auto border-l border-border-warm bg-bg-surface p-4 text-[color:var(--caelum-text)] shadow-xl">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <div className="text-sm font-extrabold">{actionLabel(entry.action)}</div>
+            <div className="text-sm font-extrabold text-[color:var(--caelum-text-heading)]">{actionLabel(entry.action)}</div>
             <div className="text-xs text-slate-600 font-mono">#{entry.seq} · {entry.action}</div>
           </div>
-          <button type="button" className="text-xs font-semibold text-brand-burgundy" onClick={onClose}>Close</button>
+          <button type="button" className="inline-flex min-h-11 md:min-h-0 items-center text-sm font-semibold text-[color:var(--caelum-cobalt-text)] hover:underline" onClick={onClose}>Back to audit trail</button>
         </div>
         <div className="text-xs space-y-1">
           <div><span className="text-slate-600">When </span>{formatDateTime(entry.at)}</div>
