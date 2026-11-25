@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useOutletContext, useParams, useSearchParams } from 'react-router';
 import { offersApi } from '../api/offers';
+import { requestsApi } from '../api/requests';
 import { useAsync } from '../hooks/useAsync';
 import { Empty, ErrorBanner, Loading, PageHeader } from '../components/ui';
 import OfferCard from '../components/OfferCard';
@@ -9,14 +10,17 @@ import ListDetailLayout, { selectedClass } from '../components/ListDetailLayout'
 import StatusBadge from '../components/StatusBadge';
 import { patchSearchParams } from '../lib/listQuery';
 import { formatEta } from '../utils/format';
-import { readOfferFallbackLabel } from '../lib/candidateAdapter';
 
 export function OfferDetailPage() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const { onChange } = useOutletContext() || {};
-  const direction = searchParams.get('direction') === 'outgoing' ? 'outgoing' : 'incoming';
+  const incoming = searchParams.get('direction') !== 'outgoing';
   const { data, error, loading, reload } = useAsync(() => offersApi.get(id), [id], { interval: 15000 });
+  const request = useAsync(
+    () => (!incoming && data?.request_id ? requestsApi.get(data.request_id) : Promise.resolve(null)),
+    [incoming, data?.request_id],
+  );
   if (loading) return <Loading />;
   if (!data) {
     return (
@@ -26,7 +30,14 @@ export function OfferDetailPage() {
       </div>
     );
   }
-  return <OfferCard offer={data} incoming={direction === 'incoming'} onChange={() => { reload(); onChange?.(); }} />;
+  return (
+    <OfferCard
+      offer={data}
+      incoming={incoming}
+      requestBloodGroup={incoming ? undefined : request.data?.blood_group}
+      onChange={() => { reload(); onChange?.(); }}
+    />
+  );
 }
 
 export default function OffersPage() {
@@ -62,14 +73,7 @@ export default function OffersPage() {
                 className={`block rounded-xl border border-border-warm bg-bg-surface p-4 shadow-card hover:border-[color:var(--caelum-cobalt-text)] ${selectedClass(selected)}`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
-                    <span>{o.units_requested} × {o.blood_group}</span>
-                    {readOfferFallbackLabel(o) && (
-                      <span className="inline-flex items-center rounded-full border border-[color:var(--caelum-amber-text)]/40 bg-bg-inset px-2 py-0.5 text-xs font-semibold text-[color:var(--caelum-amber-text)]">
-                        {readOfferFallbackLabel(o)}
-                      </span>
-                    )}
-                  </div>
+                  <div className="text-sm font-bold">{o.units_requested} × {o.blood_group}</div>
                   <StatusBadge value={o.status} />
                 </div>
                 <div className="mt-1 text-xs text-slate-600">

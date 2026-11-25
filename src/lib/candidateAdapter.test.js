@@ -5,6 +5,7 @@ import {
   buildOfferPayload,
   candidateQueryParams,
   filterFallbacksForRequest,
+  deriveRecipientOfferFallback,
   formatCandidateOfferError,
   readOfferFallbackLabel,
   readOfferWarnings,
@@ -128,6 +129,38 @@ describe('candidateAdapter', () => {
     expect(readOfferFallbackLabel({ fallback: 'substitute' })).toBe('Compatible substitute');
     expect(readOfferFallbackLabel({ fallback: 'manual_override' })).toBe('Manual override');
     expect(readOfferFallbackLabel({})).toBeNull();
+
+    expect(deriveRecipientOfferFallback({
+      postResponse: { id: 'o1', fallback: 'manual_override', warnings: ['route_unverified: check the route'], blood_group: 'A+' },
+      offer: { id: 'o1', blood_group: 'A+' },
+      requestBloodGroup: 'A+',
+    })).toEqual({ label: 'Manual override', warnings: ['route_unverified: check the route'] });
+
+    expect(deriveRecipientOfferFallback({
+      postResponse: { id: 'o1', fallback: 'substitute', warnings: ['cold_chain_cap_exceeded: 4h'], blood_group: 'O-' },
+      offer: { id: 'o1', blood_group: 'O-' },
+      requestBloodGroup: 'A+',
+    })).toEqual({ label: 'Substitute: O- for A+', warnings: ['cold_chain_cap_exceeded: 4h'] });
+
+    expect(deriveRecipientOfferFallback({
+      offer: { id: 'o2', blood_group: 'O-' },
+      requestBloodGroup: 'A+',
+    })).toEqual({ label: 'Substitute: O- for A+', warnings: [] });
+
+    expect(deriveRecipientOfferFallback({
+      offer: { id: 'o2', blood_group: 'A+' },
+      requestBloodGroup: 'A+',
+    })).toEqual({ label: null, warnings: [] });
+
+    expect(deriveRecipientOfferFallback({
+      offer: { id: 'o2' },
+      requestBloodGroup: 'A+',
+    })).toEqual({ label: null, warnings: [] });
+
+    expect(deriveRecipientOfferFallback({
+      offer: { id: 'o2', blood_group: 'O-', fallback: 'manual_override', warnings: ['should-not-appear'] },
+      requestBloodGroup: 'A+',
+    })).toEqual({ label: 'Substitute: O- for A+', warnings: [] });
 
     expect(formatCandidateOfferError({ code: 'substitute_confirmation_required', message: 'raw' }).message)
       .toMatch(/officer approves/i);

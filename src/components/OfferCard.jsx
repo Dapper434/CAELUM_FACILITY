@@ -5,20 +5,21 @@ import { offersApi } from '../api/offers';
 import { useAction } from '../hooks/useAction';
 import { DECLINE_REASONS, productLabel } from '../utils/constants';
 import { formatDateTime, formatEta } from '../utils/format';
-import { readOfferFallbackLabel, readOfferWarnings } from '../lib/candidateAdapter';
+import { deriveRecipientOfferFallback } from '../lib/candidateAdapter';
 import { Button, ErrorBanner } from './ui';
 import StatusBadge from './StatusBadge';
 import Countdown from './Countdown';
 
-export default function OfferCard({ offer, incoming, onChange }) {
+export default function OfferCard({ offer, incoming, onChange, requestBloodGroup, postResponse }) {
   const [declining, setDeclining] = useState(false);
   const [reason, setReason] = useState('insufficient_stock');
   const [note, setNote] = useState('');
   const { busy, error, run } = useAction();
   const navigate = useNavigate();
   const live = ['pending', 'held'].includes(offer.status);
-  const fallbackLabel = readOfferFallbackLabel(offer);
-  const warnings = readOfferWarnings(offer);
+  const display = incoming
+    ? { label: null, warnings: [] }
+    : deriveRecipientOfferFallback({ offer, requestBloodGroup, postResponse });
 
   async function hold() { if (await run(() => offersApi.hold(offer.id))) onChange?.(); }
   async function accept() {
@@ -37,12 +38,12 @@ export default function OfferCard({ offer, incoming, onChange }) {
             {offer.units_requested} × {offer.blood_group}{' '}
             <span className="font-normal text-[color:var(--caelum-text-muted)]">{productLabel(offer.product_type)}</span>
           </span>
-          {fallbackLabel && (
+          {display.label && (
             <span
               data-testid="offer-fallback-label"
               className="inline-flex items-center rounded-full border border-[color:var(--caelum-amber-text)]/40 bg-bg-inset px-2 py-0.5 text-xs font-semibold text-[color:var(--caelum-amber-text)]"
             >
-              {fallbackLabel}
+              {display.label}
             </span>
           )}
         </div>
@@ -56,7 +57,7 @@ export default function OfferCard({ offer, incoming, onChange }) {
       )}
       {offer.status === 'held' && <div className="text-xs text-[color:var(--caelum-text-muted)] mt-1">Held {formatDateTime(offer.held_at)} · extensions used {offer.hold_extensions}/1</div>}
       {offer.decline_reason && <div className="text-xs text-[color:var(--caelum-text-muted)] mt-1">Declined: {offer.decline_reason}{offer.decline_note ? ` — ${offer.decline_note}` : ''}</div>}
-      {warnings.length > 0 && (
+      {display.warnings.length > 0 && (
         <div
           role="status"
           data-testid="offer-warnings"
@@ -64,7 +65,7 @@ export default function OfferCard({ offer, incoming, onChange }) {
         >
           <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" aria-hidden />
           <ul className="list-disc pl-4 space-y-0.5">
-            {warnings.map((w, idx) => <li key={idx}>{w}</li>)}
+            {display.warnings.map((w, idx) => <li key={idx}>{w}</li>)}
           </ul>
         </div>
       )}

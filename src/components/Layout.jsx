@@ -167,7 +167,7 @@ export default function Layout() {
         Skip to content
       </a>
 
-      <header className="sticky top-0 z-30 h-16 border-b border-clinic-border bg-bg-surface/95 backdrop-blur">
+      <header className="sticky top-0 z-30 h-16 border-b border-clinic-border bg-bg-surface backdrop-blur">
         <div className="flex h-full items-center justify-between gap-3 px-3 sm:px-5">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <button

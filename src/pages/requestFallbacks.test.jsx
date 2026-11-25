@@ -295,4 +295,46 @@ describe('RequestDetailPage fallbacks (contract 1.10.0)', () => {
     expect(screen.queryByRole('button', { name: 'Cancel request' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Back to requests' })).toBeInTheDocument();
   });
+
+  it('shows fallback label and warnings from the 201 POST body on the recipient request view', async () => {
+    requestsApi.candidates.mockResolvedValue({
+      candidates: [{
+        rank: 1, donor_facility_id: 'f2', donor_name: 'Moi', donor_level_label: 'L6',
+        distance_km: 12, road_minutes: 15, handling_minutes: 5, elapsed_minutes: 20, eta_source: 'estimate',
+        current_stock: 5, post_transfer_units: 3, post_transfer_cover_days: 2, cold_chain_viable: true,
+        earliest_expiry: '2026-12-01T00:00:00Z',
+      }],
+    });
+    requestsApi.sendOffer.mockResolvedValue({
+      id: 'o-post',
+      offer_code: 'OFR-9',
+      blood_group: 'A+',
+      fallback: 'manual_override',
+      warnings: ['route_unverified: route needs verification'],
+      status: 'pending',
+    });
+    show();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Send offer' }));
+    expect(await screen.findByTestId('offer-fallback-label')).toHaveTextContent('Manual override');
+    expect(screen.getByText('route_unverified: route needs verification')).toBeInTheDocument();
+  });
+
+  it('derives Substitute: X for Y on the recipient request view when offer and request blood groups differ', async () => {
+    requestsApi.candidates.mockResolvedValue({ candidates: [] });
+    offersApi.list.mockResolvedValue([{
+      id: 'o-later',
+      offer_code: 'OFR-10',
+      status: 'pending',
+      blood_group: 'O-',
+      eta_minutes: 40,
+      eta_source: 'estimate',
+      expires_at: new Date(Date.now() + 300000).toISOString(),
+    }]);
+    show();
+
+    expect(await screen.findByTestId('offer-fallback-label')).toHaveTextContent('Substitute: O- for A+');
+    expect(screen.queryByTestId('offer-warnings')).toBeNull();
+    expect(screen.queryByText('Manual override')).toBeNull();
+  });
 });

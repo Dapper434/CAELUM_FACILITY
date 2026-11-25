@@ -51,22 +51,76 @@ describe('OfferCard', () => {
     expect(screen.queryByText('Accept')).toBeNull();
   });
 
-  it('displays fallback label and warnings on incoming donor offer without exposing fallback actions', () => {
+  it('hides fallback label and warnings on the donor view of an incoming offer', () => {
     render(
       <MemoryRouter>
         <OfferCard
           incoming
+          requestBloodGroup="A+"
+          postResponse={{ fallback: 'manual_override', warnings: ['route_unverified: route needs verification'] }}
           offer={{
             ...offer,
+            blood_group: 'O-',
             fallback: 'manual_override',
             warnings: ['route_unverified: route needs verification'],
           }}
         />
       </MemoryRouter>,
     );
+    expect(screen.queryByTestId('offer-fallback-label')).toBeNull();
+    expect(screen.queryByTestId('offer-warnings')).toBeNull();
+    expect(screen.queryByText('Manual override')).toBeNull();
+    expect(screen.queryByText(/Substitute:/)).toBeNull();
+    expect(screen.queryByText(/route_unverified/)).toBeNull();
+    expect(screen.getByText('Accept')).toBeInTheDocument();
+  });
+
+  it('shows the POST 201 fallback label and warnings on the recipient view, then derives Substitute: X for Y', () => {
+    const { rerender } = render(
+      <MemoryRouter>
+        <OfferCard
+          incoming={false}
+          requestBloodGroup="A+"
+          postResponse={{
+            id: 'o1',
+            fallback: 'manual_override',
+            warnings: ['route_unverified: route needs verification'],
+            blood_group: 'A+',
+          }}
+          offer={{ ...offer, blood_group: 'A+' }}
+        />
+      </MemoryRouter>,
+    );
     expect(screen.getByTestId('offer-fallback-label')).toHaveTextContent('Manual override');
     expect(screen.getByTestId('offer-warnings')).toHaveTextContent('route_unverified: route needs verification');
-    expect(screen.queryByRole('button', { name: 'Search nationally' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Request from a hospital manually' })).toBeNull();
+
+    rerender(
+      <MemoryRouter>
+        <OfferCard
+          incoming={false}
+          requestBloodGroup="A+"
+          offer={{ ...offer, blood_group: 'O-' }}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('offer-fallback-label')).toHaveTextContent('Substitute: O- for A+');
+    expect(screen.queryByTestId('offer-warnings')).toBeNull();
+    expect(screen.queryByText('Manual override')).toBeNull();
+  });
+
+  it('does not derive a substitute label when blood groups are missing or the same', () => {
+    const { rerender } = render(
+      <MemoryRouter>
+        <OfferCard incoming={false} requestBloodGroup="A+" offer={{ ...offer, blood_group: 'A+' }} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByTestId('offer-fallback-label')).toBeNull();
+
+    rerender(
+      <MemoryRouter>
+        <OfferCard incoming={false} offer={{ ...offer, blood_group: 'O-' }} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByTestId('offer-fallback-label')).toBeNull();
   });
 });

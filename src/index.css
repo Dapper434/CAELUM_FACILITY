@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 :root { color-scheme: light; }
+html.dark, html.clinical-mode { color-scheme: dark; }
 
 @layer base {
   html, body {
@@ -74,6 +75,11 @@
 .app-canvas {
   background-color: #F4F7FA;
   background-image: radial-gradient(1100px 520px at 16% -18%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0) 72%);
+}
+html.dark .app-canvas,
+html.clinical-mode .app-canvas {
+  background-color: var(--caelum-bg-canvas);
+  background-image: radial-gradient(1100px 520px at 16% -18%, rgba(40, 48, 66, 0.92), rgba(30, 36, 51, 0) 72%);
 }
 
 /* Signed-in shell fills the viewport; lists and panels scroll inside, not the page. */

@@ -20,7 +20,7 @@ import {
   adaptCandidatesResponse,
   filterFallbacksForRequest,
   formatCandidateOfferError,
-  readOfferFallbackLabel,
+  deriveRecipientOfferFallback,
   readOfferWarnings,
 } from '../lib/candidateAdapter';
 
@@ -36,12 +36,14 @@ export default function RequestDetailPage() {
   const [scope, setScope] = useState(CANDIDATE_SCOPES.REGIONAL);
   const [includeCompatible, setIncludeCompatible] = useState(false);
   const [offerWarnings, setOfferWarnings] = useState([]);
+  const [postedOffer, setPostedOffer] = useState(null);
   const [manualActive, setManualActive] = useState(false);
 
   useEffect(() => {
     setScope(CANDIDATE_SCOPES.REGIONAL);
     setIncludeCompatible(false);
     setOfferWarnings([]);
+    setPostedOffer(null);
     setManualActive(false);
   }, [id]);
 
@@ -63,6 +65,7 @@ export default function RequestDetailPage() {
 
   async function sendOffer(c, opts) {
     setOfferWarnings([]);
+    setPostedOffer(null);
     const payloadOpts = opts?.override
       ? opts
       : {
@@ -71,6 +74,7 @@ export default function RequestDetailPage() {
         };
     const res = await action.run(() => requestsApi.sendOffer(id, c.donor_facility_id, payloadOpts));
     if (res) {
+      setPostedOffer(res);
       setOfferWarnings(readOfferWarnings(res));
       req.reload();
       offers.reload();
@@ -95,8 +99,20 @@ export default function RequestDetailPage() {
 
   const offerRows = Array.isArray(offers.data) ? offers.data : offers.data?.items || [];
   const activeOffer = offerRows.find((o) => ACTIVE_OFFER.includes(o.status));
-  const activeOfferFallback = readOfferFallbackLabel(activeOffer);
-  const activeOfferWarnings = readOfferWarnings(activeOffer);
+  const postResponse = postedOffer && (!activeOffer || !postedOffer.id || postedOffer.id === activeOffer.id)
+    ? postedOffer
+    : null;
+  const recipientOfferDisplay = isRecipient
+    ? deriveRecipientOfferFallback({
+      offer: activeOffer || postedOffer,
+      requestBloodGroup: r.blood_group,
+      postResponse,
+    })
+    : { label: null, warnings: [] };
+  const activeOfferFallback = recipientOfferDisplay.label;
+  const activeOfferWarnings = recipientOfferDisplay.warnings.length
+    ? recipientOfferDisplay.warnings
+    : offerWarnings;
   const adapted = adaptCandidatesResponse(cands.data);
   const fallbacks = filterFallbacksForRequest(adapted?.fallbacksAvailable, r);
   const actionError = formatCandidateOfferError(action.error);
@@ -113,7 +129,28 @@ export default function RequestDetailPage() {
         )}
       />
       <ErrorBanner error={actionError} />
-      {offerWarnings.length > 0 && (
+      {isRecipient && (recipientOfferDisplay.label || offerWarnings.length > 0) && !activeOffer && (
+        <div
+          role="status"
+          className="flex items-start gap-2 rounded-xl border border-[color:var(--caelum-amber-text)]/40 bg-bg-inset px-3 py-2 text-sm text-[color:var(--caelum-amber-text)]"
+        >
+          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" aria-hidden />
+          <div>
+            {recipientOfferDisplay.label && (
+              <div className="font-semibold" data-testid="offer-fallback-label">{recipientOfferDisplay.label}</div>
+            )}
+            {offerWarnings.length > 0 && (
+              <>
+                <div className="font-semibold">{recipientOfferDisplay.label ? 'Offer sent with warnings:' : 'Offer sent with warnings:'}</div>
+                <ul className="list-disc pl-4 mt-0.5 space-y-0.5">
+                  {offerWarnings.map((w, idx) => <li key={idx}>{w}</li>)}
+                </ul>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      {isRecipient && offerWarnings.length > 0 && activeOffer && (
         <div
           role="status"
           className="flex items-start gap-2 rounded-xl border border-[color:var(--caelum-amber-text)]/40 bg-bg-inset px-3 py-2 text-sm text-[color:var(--caelum-amber-text)]"
@@ -142,7 +179,7 @@ export default function RequestDetailPage() {
             <span className="font-mono text-xs">{activeOffer.offer_code}</span>
             <StatusBadge value={activeOffer.status} />
             {activeOfferFallback && (
-              <span className="inline-flex items-center rounded-full border border-[color:var(--caelum-amber-text)]/40 bg-bg-inset px-2 py-0.5 text-xs font-semibold text-[color:var(--caelum-amber-text)]">
+              <span data-testid="offer-fallback-label" className="inline-flex items-center rounded-full border border-[color:var(--caelum-amber-text)]/40 bg-bg-inset px-2 py-0.5 text-xs font-semibold text-[color:var(--caelum-amber-text)]">
                 {activeOfferFallback}
               </span>
             )}

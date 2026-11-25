@@ -100,6 +100,35 @@ export function readOfferFallbackLabel(offer) {
   return key ? (OFFER_FALLBACK_LABELS[key] || null) : null;
 }
 
+/** Derive a substitute pill when both blood groups are present and differ. */
+export function substituteLabel(offerBloodGroup, requestBloodGroup) {
+  if (!offerBloodGroup || !requestBloodGroup) return null;
+  if (offerBloodGroup === requestBloodGroup) return null;
+  return `Substitute: ${offerBloodGroup} for ${requestBloodGroup}`;
+}
+
+/**
+ * Recipient-only offer chrome. GET /offers does not return fallback or warnings
+ * (contract 1.10.0 at f584b50), so:
+ * - use fallback + warnings[] from a 201 POST body while we still have it
+ * - otherwise derive "Substitute: X for Y" from blood groups
+ * - manual-override / national labels come only from that POST body
+ */
+export function deriveRecipientOfferFallback({ offer, requestBloodGroup, postResponse } = {}) {
+  const sameOffer = Boolean(
+    postResponse && (!offer?.id || !postResponse.id || offer.id === postResponse.id),
+  );
+  const source = sameOffer ? postResponse : null;
+  const warnings = source ? readOfferWarnings(source) : [];
+  const postLabel = source ? readOfferFallbackLabel(source) : null;
+  const derived = substituteLabel(offer?.blood_group || source?.blood_group, requestBloodGroup);
+  if (postLabel) {
+    if (source.fallback === 'substitute' && derived) return { label: derived, warnings };
+    return { label: postLabel, warnings };
+  }
+  return { label: derived, warnings: [] };
+}
+
 const ERROR_COPY = {
   substitute_confirmation_required: 'Confirm that an officer approves sending a compatible substitute before placing this offer.',
   override_reason_required: 'Enter a reason (up to 500 characters) for requesting from a hospital manually.',
