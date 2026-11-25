@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { transfersApi } from '../api/transfers';
 import { useAsync } from '../hooks/useAsync';
 import { useAuth } from '../context/AuthContext';
@@ -7,16 +7,22 @@ import { Card, Empty, ErrorBanner, Loading, PageHeader } from '../components/ui'
 import StatusBadge from '../components/StatusBadge';
 import ResponsiveTable from '../components/ResponsiveTable';
 import PageControls from '../components/PageControls';
+import ListDetailLayout from '../components/ListDetailLayout';
 import { formatDateTime, formatTemp, humanize } from '../utils/format';
 import { transferRole } from '../utils/roles';
 import { courierStatusLabel, transferPollInterval } from '../utils/transferStatus';
 import { PAGE_SIZE, clampedPage, pageParams, readPage } from '../lib/pagination';
+import { pageFromSearch, patchSearchParams } from '../lib/listQuery';
 
 export default function TransfersPage() {
-  const [activeOnly, setActiveOnly] = useState(true);
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeOnly = searchParams.get('active') !== 'false';
+  const page = pageFromSearch(searchParams);
   const { facilityId } = useAuth();
   const [interval, setPoll] = useState(0);
+  const location = useLocation();
+  const { id: openId } = useParams();
+  const selectedId = openId || location.state?.selectedId;
   const { data, error, loading } = useAsync(async () => {
     const raw = await transfersApi.list({
       ...(activeOnly ? { active: 'true' } : {}),
@@ -24,27 +30,27 @@ export default function TransfersPage() {
     });
     const parsed = readPage(raw, { page });
     const next = clampedPage(page, parsed.total, parsed.page_size);
-    if (next !== page) setPage(next);
+    if (next !== page) patchSearchParams(setSearchParams, { page: next });
     setPoll(transferPollInterval(parsed.items)); // poll the current page only
     return parsed;
   }, [activeOnly, page], { interval });
-  const changeActive = (value) => { setActiveOnly(value); setPage(1); };
+  const changeActive = (value) => patchSearchParams(setSearchParams, { active: value ? 'true' : 'false', page: 1 });
+  const setPage = (value) => patchSearchParams(setSearchParams, { page: value });
+  const hrefFor = (id) => ({ pathname: `/transfers/${id}`, search: location.search });
   const pageData = readPage(data);
   const rows = pageData.items;
   const columns = [
-    { header: 'Code', className: 'font-mono text-xs', cell: (t) => <Link className="text-brand-cobalt font-semibold" to={`/transfers/${t.id}`}>{t.transfer_code}</Link> },
+    { header: 'Code', className: 'font-mono text-xs', cell: (t) => <Link className="text-brand-cobalt font-semibold" to={hrefFor(t.id)}>{t.transfer_code}</Link> },
     { header: 'Role', cell: (t) => humanize(transferRole(t, facilityId)) || 'Unknown' },
     { header: 'Blood', className: 'font-bold', cell: (t) => `${t.quantity} × ${t.blood_group}` },
     { header: 'Stage', cell: (t) => (<><StatusBadge value={t.stage} />{courierStatusLabel(t) && <div className="text-xs text-slate-600 mt-0.5">{courierStatusLabel(t)}</div>}</>) },
-    { header: 'Temp', className: (t) => (t.temperature_excursion ? 'text-crimson-text font-bold' : ''), cell: (t) => formatTemp(t.temperature_c) },
+    {
+      header: 'Temp',
+      cell: (t) => <span className={t.temperature_excursion ? 'text-crimson-text font-bold' : ''}>{formatTemp(t.temperature_c)}</span>,
+    },
     { header: 'Updated', className: 'whitespace-nowrap', cell: (t) => formatDateTime(t.updated_at) },
   ];
-  // className as function isn't supported — fix Temp column
-  columns[4] = {
-    header: 'Temp',
-    cell: (t) => <span className={t.temperature_excursion ? 'text-crimson-text font-bold' : ''}>{formatTemp(t.temperature_c)}</span>,
-  };
-  return (
+  const list = (
     <div>
       <PageHeader title="Transfers" subtitle="Transfers where this facility is donor or recipient" />
       <Card>
@@ -56,10 +62,11 @@ export default function TransfersPage() {
           <ResponsiveTable
             aria-label="Transfers"
             rows={rows}
+            selectedKey={selectedId}
             columns={columns}
             empty={<Empty>No transfers.</Empty>}
             card={(t) => (
-              <Link to={`/transfers/${t.id}`} className="block space-y-1.5">
+              <Link to={hrefFor(t.id)} className="block space-y-1.5">
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-mono text-xs font-semibold text-brand-cobalt">{t.transfer_code}</span>
                   <StatusBadge value={t.stage} />
@@ -85,4 +92,5 @@ export default function TransfersPage() {
       </Card>
     </div>
   );
+  return <ListDetailLayout list={list} backTo="/transfers" backLabel="Back to transfers" />;
 }

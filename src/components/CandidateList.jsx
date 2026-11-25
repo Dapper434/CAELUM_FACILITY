@@ -3,8 +3,15 @@ import { Snowflake } from 'lucide-react';
 import { Button, Empty } from './ui';
 import { formatDateTime, formatEta } from '../utils/format';
 
-export default function CandidateList({ candidates, onOffer, busy, canOffer }) {
-  if (!candidates || candidates.length === 0) return <Empty>No eligible donors right now.</Empty>;
+export default function CandidateList({ candidates, onOffer, busy, canOffer, emptyAction }) {
+  if (!candidates || candidates.length === 0) {
+    return (
+      <div>
+        <Empty>No eligible donors right now.</Empty>
+        {emptyAction}
+      </div>
+    );
+  }
   return (
     <ol className="space-y-2">
       {candidates.map((c) => (

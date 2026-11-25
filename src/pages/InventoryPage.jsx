@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useLocation, useOutletContext, useParams, useSearchParams } from 'react-router';
 import { inventoryApi } from '../api/inventory';
 import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
@@ -10,8 +10,11 @@ import AddUnitsForm from '../components/AddUnitsForm';
 import CorrectUnitForm from '../components/CorrectUnitForm';
 import ResponsiveTable from '../components/ResponsiveTable';
 import PageControls from '../components/PageControls';
+import ListDetailLayout from '../components/ListDetailLayout';
+import BackToList from '../components/BackToList';
 import { formatDateTime, formatTemp } from '../utils/format';
 import { PAGE_SIZE, clampedPage, pageParams, readPage } from '../lib/pagination';
+import { pageFromSearch, patchSearchParams } from '../lib/listQuery';
 import { productLabel } from '../utils/constants';
 
 const STATUSES = ['', 'available', 'reserved', 'in_transit', 'quarantined', 'transferred', 'expired', 'discarded'];
@@ -45,32 +48,78 @@ function UnitActions({ unit, busy, editing, onStatus, onToggleCorrect }) {
   );
 }
 
+export function InventoryUnitPage() {
+  const { id } = useParams();
+  const ctx = useOutletContext() || {};
+  const { units = [], loading, action, editing, setStatus, toggleCorrect, reload } = ctx;
+  const unit = units.find((u) => String(u.id) === String(id));
+
+  if (loading && !unit) return <Loading />;
+  if (!unit) {
+    return (
+      <div>
+        <Empty>This unit isn’t on the current list.</Empty>
+        <BackToList to="/inventory" label="Back to inventory" selectedId={id} className="mt-2" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <PageHeader
+        title={unit.unit_code}
+        subtitle={`${unit.lot_number || 'No lot'} · ${productLabel(unit.product_type)}`}
+      />
+      <Card>
+        <div className="flex flex-wrap gap-4 text-sm">
+          <div><span className="label">Group</span><span className="font-bold">{unit.blood_group}</span></div>
+          <div><span className="label">Status</span><StatusBadge value={unit.status} /></div>
+          <div><span className="label">Expiry</span>{formatDateTime(unit.expiry_date)}</div>
+          <div><span className="label">Temp</span>{formatTemp(unit.storage_temp_c)}</div>
+        </div>
+        <div className="mt-4">
+          <UnitActions unit={unit} busy={action?.busy} editing={editing} onStatus={setStatus} onToggleCorrect={toggleCorrect} />
+        </div>
+      </Card>
+      {editing === unit.id && (
+        <Card title="Correct this unit">
+          <CorrectUnitForm unit={unit} onCancel={() => toggleCorrect(unit.id)} onDone={() => { toggleCorrect(unit.id); reload(); }} />
+        </Card>
+      )}
+    </div>
+  );
+}
+
 export default function InventoryPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const requestedStatus = searchParams.get('status') || '';
-  const [filters, setFilters] = useState({
-    blood_group: '',
-    product_type: '',
+  const filters = {
+    blood_group: searchParams.get('blood_group') || '',
+    product_type: searchParams.get('product_type') || '',
     status: STATUSES.includes(requestedStatus) ? requestedStatus : '',
-  });
-  const [page, setPage] = useState(1);
+  };
+  const page = pageFromSearch(searchParams);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
+  const location = useLocation();
+  const { id: openId } = useParams();
+  const selectedId = openId || location.state?.selectedId;
   const { data, error, loading, reload } = useAsync(async () => {
     const raw = await inventoryApi.list({ ...filters, ...pageParams(page) });
     const parsed = readPage(raw, { page });
     const next = clampedPage(page, parsed.total, parsed.page_size);
-    if (next !== page) setPage(next);
+    if (next !== page) patchSearchParams(setSearchParams, { page: next });
     return parsed;
   }, [JSON.stringify(filters), page]);
   const action = useAction();
-  const changeFilters = (next) => { setFilters(next); setPage(1); };
+  const changeFilters = (next) => patchSearchParams(setSearchParams, { ...next, page: 1 });
 
   async function setStatus(unit, status) {
     const ok = await action.run(() => inventoryApi.setStatus(unit.id, status));
     if (ok) reload();
   }
   const toggleCorrect = (id) => setEditing((cur) => (cur === id ? null : id));
+  const hrefFor = (id) => ({ pathname: `/inventory/${id}`, search: location.search });
 
   const pageData = readPage(data);
   const units = pageData.items;
@@ -78,7 +127,12 @@ export default function InventoryPage() {
     {
       header: 'Unit',
       className: 'font-mono text-xs',
-      cell: (u) => (<><span className="break-all">{u.unit_code}</span><div className="text-slate-600">{u.lot_number}</div></>),
+      cell: (u) => (
+        <>
+          <Link className="break-all font-semibold text-brand-cobalt" to={hrefFor(u.id)}>{u.unit_code}</Link>
+          <div className="text-slate-600">{u.lot_number}</div>
+        </>
+      ),
     },
     { header: 'Group', className: 'font-bold', cell: (u) => u.blood_group },
     { header: 'Product', cell: (u) => productLabel(u.product_type) },
@@ -93,7 +147,7 @@ export default function InventoryPage() {
     },
   ];
 
-  return (
+  const list = (
     <div>
       <PageHeader
         title="Inventory"
@@ -116,13 +170,14 @@ export default function InventoryPage() {
           <ResponsiveTable
             aria-label="Inventory units"
             rows={units}
+            selectedKey={selectedId}
             columns={columns}
             empty={<Empty>No units match.</Empty>}
             card={(u) => (
               <div className="space-y-2" data-testid="unit-card">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="font-mono text-xs font-semibold break-all">{u.unit_code}</div>
+                    <Link to={hrefFor(u.id)} className="font-mono text-xs font-semibold break-all text-brand-cobalt">{u.unit_code}</Link>
                     <div className="text-xs text-slate-600">{u.lot_number || '—'}</div>
                   </div>
                   <StatusBadge value={u.status} />
@@ -155,11 +210,20 @@ export default function InventoryPage() {
             pageSize={pageData.page_size || PAGE_SIZE}
             total={pageData.total}
             hasMore={pageData.has_more}
-            onPage={setPage}
+            onPage={(value) => patchSearchParams(setSearchParams, { page: value })}
             noun="units"
           />
         )}
       </Card>
     </div>
+  );
+
+  return (
+    <ListDetailLayout
+      list={list}
+      backTo="/inventory"
+      backLabel="Back to inventory"
+      outletContext={{ units, loading, action, editing, setStatus, toggleCorrect, reload }}
+    />
   );
 }

@@ -18,7 +18,7 @@ vi.mock('./api/transfers', () => ({ transfersApi: {
   custody: vi.fn(async () => []), audit: vi.fn(async () => []), otp: vi.fn(async () => ({ otp_code: '123456' })), list: vi.fn(async () => []),
 } }));
 vi.mock('./api/requests', () => ({ requestsApi: { get: vi.fn(async () => request), candidates: vi.fn(async () => null), list: vi.fn(async () => []) } }));
-vi.mock('./api/offers', () => ({ offersApi: { list: vi.fn(async () => []) } }));
+vi.mock('./api/offers', () => ({ offersApi: { list: vi.fn(async () => []), get: vi.fn(async () => null) } }));
 vi.mock('./api/forecast', () => ({ forecastApi: { alerts: vi.fn(async () => []) } }));
 
 import App from './App';

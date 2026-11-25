@@ -5,6 +5,7 @@ import { useAsync } from '../hooks/useAsync';
 import { useAction } from '../hooks/useAction';
 import { useAuth } from '../context/AuthContext';
 import { Button, Card, ErrorBanner, Loading, PageHeader } from '../components/ui';
+import BackToList from '../components/BackToList';
 import StatusBadge from '../components/StatusBadge';
 import StageTimeline from '../components/StageTimeline';
 import TrackingMap from '../components/TrackingMap';
@@ -38,7 +39,14 @@ export default function TransferDetailPage() {
   const action = useAction();
 
   if (t.loading) return <Loading />;
-  if (!t.data) return <ErrorBanner error={t.error} />;
+  if (!t.data) {
+    return (
+      <div>
+        <ErrorBanner error={t.error || { message: 'Transfer not found.' }} />
+        <BackToList to="/transfers" label="Back to transfers" selectedId={id} className="mt-2" />
+      </div>
+    );
+  }
   const tr = t.data;
   const role = transferRole(tr, facilityId);
   const refresh = () => { t.reload(); custody.reload(); audit.reload(); };

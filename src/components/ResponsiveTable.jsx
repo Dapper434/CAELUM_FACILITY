@@ -12,6 +12,7 @@ export default function ResponsiveTable({
   card,
   empty = null,
   afterRow,
+  selectedKey,
   'aria-label': ariaLabel,
 }) {
   const desktop = useMediaQuery('(min-width: 768px)');
@@ -21,8 +22,14 @@ export default function ResponsiveTable({
       <ul className="space-y-3" aria-label={ariaLabel}>
         {rows.map((row) => {
           const key = keyOf(row);
+          const selected = selectedKey != null && String(key) === String(selectedKey);
           return (
-            <li key={key} className="rounded-xl border border-border-warm bg-bg-inset p-3 space-y-2">
+            <li
+              key={key}
+              data-selected={selected ? 'true' : undefined}
+              aria-current={selected ? 'true' : undefined}
+              className={`rounded-xl border border-border-warm bg-bg-inset p-3 space-y-2 ${selected ? 'outline outline-2 outline-offset-[-2px] outline-[color:var(--caelum-cobalt-text)]' : ''}`}
+            >
               {card ? card(row) : (
                 <dl className="space-y-1.5">
                   {columns.map((col) => (
@@ -49,9 +56,14 @@ export default function ResponsiveTable({
           <tbody>
             {rows.map((row) => {
               const key = keyOf(row);
+              const selected = selectedKey != null && String(key) === String(selectedKey);
               return (
                 <React.Fragment key={key}>
-                  <tr className="hover:bg-bg-inset/60">
+                  <tr
+                    data-selected={selected ? 'true' : undefined}
+                    aria-current={selected ? 'true' : undefined}
+                    className={`hover:bg-bg-inset/60 ${selected ? 'bg-bg-inset outline outline-2 outline-offset-[-2px] outline-[color:var(--caelum-cobalt-text)]' : ''}`}
+                  >
                     {columns.map((col) => (
                       <td key={col.header} className={`td ${col.className || ''}`}>{col.cell(row)}</td>
                     ))}

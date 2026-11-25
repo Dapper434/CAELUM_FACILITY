@@ -8,10 +8,15 @@ import { Button, Card, Empty, ErrorBanner, Loading, PageHeader } from '../compon
 import StatusBadge from '../components/StatusBadge';
 import CandidateList from '../components/CandidateList';
 import Countdown from '../components/Countdown';
+import BackToList from '../components/BackToList';
 import { formatDateTime, formatEta } from '../utils/format';
 import { productLabel } from '../utils/constants';
 
 const ACTIVE_OFFER = ['pending', 'held', 'accepted', 'packed'];
+
+function DetailBack() {
+  return <BackToList to="/requests" label="Back to requests" selectedId={useParams().id} className="mt-2" />;
+}
 
 export default function RequestDetailPage() {
   const { id } = useParams();
@@ -29,7 +34,14 @@ export default function RequestDetailPage() {
   }
 
   if (req.loading) return <Loading />;
-  if (!r) return <ErrorBanner error={req.error} />;
+  if (!r) {
+    return (
+      <div>
+        <ErrorBanner error={req.error || { message: 'Request not found.' }} />
+        <DetailBack />
+      </div>
+    );
+  }
   const activeOffer = (offers.data || []).find((o) => ACTIVE_OFFER.includes(o.status));
   return (
     <div className="space-y-4">
@@ -61,10 +73,17 @@ export default function RequestDetailPage() {
       {r.status === 'open' && (
         <Card title="Ranked candidate donors">
           <ErrorBanner error={cands.error} />
+          {cands.error && !cands.loading && <DetailBack />}
           {cands.loading ? <Loading label="Ranking donors…" /> : (
             <>
               {cands.data?.rationale?.text && <p className="text-sm text-slate-600 mb-3">{cands.data.rationale.text}</p>}
-              <CandidateList candidates={cands.data?.candidates} onOffer={sendOffer} busy={action.busy} canOffer />
+              <CandidateList
+                candidates={cands.data?.candidates}
+                onOffer={sendOffer}
+                busy={action.busy}
+                canOffer
+                emptyAction={<DetailBack />}
+              />
               {(cands.data?.policies || []).length > 0 && (
                 <div className="mt-3 text-xs text-slate-600">Policies: {cands.data.policies.map((p) => `${p.title} §${p.section_ref || ''}`).join(' · ')}</div>
               )}
@@ -72,7 +91,12 @@ export default function RequestDetailPage() {
           )}
         </Card>
       )}
-      {r.status !== 'open' && !activeOffer && <Empty>Candidates are shown while the request is open.</Empty>}
+      {r.status !== 'open' && !activeOffer && (
+        <div>
+          <Empty>Candidates are shown while the request is open.</Empty>
+          <DetailBack />
+        </div>
+      )}
     </div>
   );
 }

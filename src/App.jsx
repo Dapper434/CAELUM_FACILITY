@@ -7,12 +7,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
-import InventoryPage from './pages/InventoryPage';
+import InventoryPage, { InventoryUnitPage } from './pages/InventoryPage';
 import AvailabilityPage from './pages/AvailabilityPage';
 import ForecastPage from './pages/ForecastPage';
 import RequestsPage from './pages/RequestsPage';
 import RequestDetailPage from './pages/RequestDetailPage';
-import OffersPage from './pages/OffersPage';
+import OffersPage, { OfferDetailPage } from './pages/OffersPage';
 import TransfersPage from './pages/TransfersPage';
 import TransferDetailPage from './pages/TransferDetailPage';
 import AuditPage from './pages/AuditPage';
@@ -32,14 +32,20 @@ export default function App() {
       {/* "/" is the public landing page when signed out, and the dashboard when signed in. */}
       <Route element={<ProtectedRoute publicHome={<LandingPage />}><Layout /></ProtectedRoute>}>
         <Route index element={<DashboardPage />} />
-        <Route path="inventory" element={<InventoryPage />} />
+        <Route path="inventory" element={<InventoryPage />}>
+          <Route path=":id" element={<InventoryUnitPage />} />
+        </Route>
         <Route path="availability" element={<AvailabilityPage />} />
         <Route path="forecast" element={<ForecastPage />} />
-        <Route path="requests" element={<RequestsPage />} />
-        <Route path="requests/:id" element={<RequestDetailPage />} />
-        <Route path="offers" element={<OffersPage />} />
-        <Route path="transfers" element={<TransfersPage />} />
-        <Route path="transfers/:id" element={<TransferDetailPage />} />
+        <Route path="requests" element={<RequestsPage />}>
+          <Route path=":id" element={<RequestDetailPage />} />
+        </Route>
+        <Route path="offers" element={<OffersPage />}>
+          <Route path=":id" element={<OfferDetailPage />} />
+        </Route>
+        <Route path="transfers" element={<TransfersPage />}>
+          <Route path=":id" element={<TransferDetailPage />} />
+        </Route>
         <Route path="audit" element={<AuditPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage />} />
