@@ -120,11 +120,11 @@ describe('request detail back navigation', () => {
   it('puts a back button on the no eligible candidates empty state', async () => {
     requestsApi.candidates.mockResolvedValue({ candidates: [] });
     show(requestRoutes, '/requests/r1');
-    expect(await screen.findByText('No eligible donors right now.')).toBeInTheDocument();
+    expect(await screen.findByText('No eligible donors in region')).toBeInTheDocument();
     const backs = screen.getAllByRole('link', { name: 'Back to requests' });
     expect(backs.length).toBeGreaterThan(1);
     fireEvent.click(backs[backs.length - 1]);
-    await waitFor(() => expect(screen.queryByText('No eligible donors right now.')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('No eligible donors in region')).toBeNull());
     expect(await screen.findByText('REQ-1')).toBeInTheDocument();
   });
 

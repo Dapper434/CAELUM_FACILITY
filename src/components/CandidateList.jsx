@@ -1,15 +1,30 @@
 import React from 'react';
 import { Snowflake } from 'lucide-react';
-import { Button, Empty } from './ui';
+import { Button } from './ui';
 import { formatDateTime, formatEta } from '../utils/format';
+import SubstitutePill from './SubstitutePill';
+import CandidatesEmpty from './CandidatesEmpty';
 
-export default function CandidateList({ candidates, onOffer, busy, canOffer, emptyAction }) {
+export default function CandidateList({
+  candidates,
+  onOffer,
+  busy,
+  canOffer,
+  emptyAction,
+  requestedBloodGroup,
+  onSearchNational,
+  onShowCompatible,
+  onManualRequest,
+}) {
   if (!candidates || candidates.length === 0) {
     return (
-      <div>
-        <Empty>No eligible donors right now.</Empty>
+      <CandidatesEmpty
+        onSearchNational={onSearchNational}
+        onShowCompatible={onShowCompatible}
+        onManualRequest={onManualRequest}
+      >
         {emptyAction}
-      </div>
+      </CandidatesEmpty>
     );
   }
   return (
@@ -28,6 +43,14 @@ export default function CandidateList({ candidates, onOffer, busy, canOffer, emp
                 Stock {c.current_stock} → {c.post_transfer_units} · {c.post_transfer_cover_days} days cover after · earliest expiry {formatDateTime(c.earliest_expiry)}
               </div>
               {c.cold_chain_viable && <div className="text-xs text-emerald-text flex items-center gap-1 mt-0.5"><Snowflake className="w-3 h-3" /> Cold chain viable</div>}
+              {c.substitute === true && (
+                <div className="mt-1">
+                  <SubstitutePill
+                    donorType={c.blood_group || c.donor_blood_group}
+                    requestedType={c.requested_blood_group || requestedBloodGroup}
+                  />
+                </div>
+              )}
             </div>
           </div>
           {canOffer && <Button busy={busy} onClick={() => onOffer(c)}>Send offer</Button>}

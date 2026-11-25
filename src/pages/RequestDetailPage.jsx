@@ -82,6 +82,7 @@ export default function RequestDetailPage() {
                 onOffer={sendOffer}
                 busy={action.busy}
                 canOffer
+                requestedBloodGroup={r.blood_group}
                 emptyAction={<DetailBack />}
               />
               {(cands.data?.policies || []).length > 0 && (
