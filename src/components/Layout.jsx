@@ -159,7 +159,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="app-canvas flex min-h-screen flex-col overflow-x-clip">
+    <div className="app-canvas app-shell flex h-screen flex-col overflow-hidden">
       <a
         href="#main-content"
         className="sr-only z-50 rounded-md bg-clinic-navy px-3 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3"
@@ -323,9 +323,9 @@ export default function Layout() {
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1">
+      <div className="flex min-h-0 min-w-0 flex-1">
         <aside
-          className={`sticky top-16 hidden h-[calc(100vh-4rem)] shrink-0 flex-col border-r border-clinic-border bg-bg-surface transition-[width] duration-[250ms] ease-out motion-reduce:transition-none md:flex ${
+          className={`hidden h-full shrink-0 flex-col border-r border-clinic-border bg-bg-surface transition-[width] duration-[250ms] ease-out motion-reduce:transition-none md:flex ${
             collapsed ? 'w-[68px]' : 'w-[240px]'
           }`}
         >
@@ -353,8 +353,8 @@ export default function Layout() {
           </div>
         </aside>
 
-        <main id="main-content" className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto w-full max-w-[1500px]">
+        <main id="main-content" className="flex min-h-0 min-w-0 flex-1 flex-col p-4 sm:p-6 lg:p-8">
+          <div className="page-outlet mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col overflow-y-auto">
             {error && <ErrorBanner error={error} />}
             {me && me.role !== 'facility' && (
               <ErrorBanner error={{ message: `Signed in as ${me.role}. This app is for facility accounts.` }} />

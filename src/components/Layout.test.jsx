@@ -31,6 +31,14 @@ function show(path = '/') {
 describe('mobile nav', () => {
   beforeEach(() => { document.body.style.overflow = ''; });
 
+  it('uses a fixed-height shell so the main column scrolls internally', () => {
+    const { container } = show('/');
+    expect(container.querySelector('.app-shell')).toHaveClass('h-screen', 'overflow-hidden');
+    expect(container.querySelector('#main-content')).toHaveClass('min-h-0', 'flex-1');
+    expect(container.querySelector('.page-outlet')).toBeInTheDocument();
+  });
+
+
   it('opens and closes the drawer, lists every link, and closes on Escape', () => {
     show('/');
     expect(screen.queryByRole('dialog', { name: /navigation menu/i })).toBeNull();
