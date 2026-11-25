@@ -25,7 +25,7 @@ describe('CandidateList empty state and substitute rows', () => {
     expect(screen.getByText('No eligible donors in region')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to requests' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Search nationally' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Show compatible types' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show compatible blood types' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Request from a hospital manually' })).toBeNull();
   });
 
@@ -41,7 +41,7 @@ describe('CandidateList empty state and substitute rows', () => {
     );
     expect(screen.getByRole('button', { name: 'Search nationally' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Request from a hospital manually' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Show compatible types' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show compatible blood types' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Search nationally' }));
     expect(screen.getByRole('dialog')).toHaveTextContent(/Search for donors nationally/);
@@ -59,7 +59,7 @@ describe('CandidateList empty state and substitute rows', () => {
   it('closes the confirm step on Escape without running the handler', () => {
     const onShowCompatible = vi.fn();
     render(<CandidateList candidates={[]} onShowCompatible={onShowCompatible} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Show compatible types' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show compatible blood types' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();

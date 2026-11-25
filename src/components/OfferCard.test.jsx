@@ -50,4 +50,23 @@ describe('OfferCard', () => {
     renderCard({ incoming: false });
     expect(screen.queryByText('Accept')).toBeNull();
   });
+
+  it('displays fallback label and warnings on incoming donor offer without exposing fallback actions', () => {
+    render(
+      <MemoryRouter>
+        <OfferCard
+          incoming
+          offer={{
+            ...offer,
+            fallback: 'manual_override',
+            warnings: ['route_unverified: route needs verification'],
+          }}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('offer-fallback-label')).toHaveTextContent('Manual override');
+    expect(screen.getByTestId('offer-warnings')).toHaveTextContent('route_unverified: route needs verification');
+    expect(screen.queryByRole('button', { name: 'Search nationally' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Request from a hospital manually' })).toBeNull();
+  });
 });
