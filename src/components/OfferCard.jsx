@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { offersApi } from '../api/offers';
 import { useAction } from '../hooks/useAction';
 import { DECLINE_REASONS, productLabel } from '../utils/constants';
 import { formatDateTime, formatEta } from '../utils/format';
+import { readOfferFallbackLabel, readOfferWarnings } from '../lib/candidateAdapter';
 import { Button, ErrorBanner } from './ui';
 import StatusBadge from './StatusBadge';
 import Countdown from './Countdown';
@@ -15,6 +17,8 @@ export default function OfferCard({ offer, incoming, onChange }) {
   const { busy, error, run } = useAction();
   const navigate = useNavigate();
   const live = ['pending', 'held'].includes(offer.status);
+  const fallbackLabel = readOfferFallbackLabel(offer);
+  const warnings = readOfferWarnings(offer);
 
   async function hold() { if (await run(() => offersApi.hold(offer.id))) onChange?.(); }
   async function accept() {
@@ -28,17 +32,42 @@ export default function OfferCard({ offer, incoming, onChange }) {
   return (
     <div className="rounded-xl border border-border-warm bg-bg-surface p-4 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="text-sm font-bold">{offer.units_requested} × {offer.blood_group} <span className="font-normal text-slate-600">{productLabel(offer.product_type)}</span></div>
+        <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[color:var(--caelum-text-heading)]">
+          <span>
+            {offer.units_requested} × {offer.blood_group}{' '}
+            <span className="font-normal text-[color:var(--caelum-text-muted)]">{productLabel(offer.product_type)}</span>
+          </span>
+          {fallbackLabel && (
+            <span
+              data-testid="offer-fallback-label"
+              className="inline-flex items-center rounded-full border border-[color:var(--caelum-amber-text)]/40 bg-bg-inset px-2 py-0.5 text-xs font-semibold text-[color:var(--caelum-amber-text)]"
+            >
+              {fallbackLabel}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2"><StatusBadge value={offer.status} />{live && <Countdown until={offer.expires_at} />}</div>
       </div>
-      <div className="text-xs text-slate-600 mt-1">
+      <div className="text-xs text-[color:var(--caelum-text-muted)] mt-1">
         <span className="font-mono">{offer.offer_code}</span> · {offer.distance_km} km · ETA {formatEta(offer.eta_minutes, offer.eta_source)} · cover after {offer.post_transfer_cover_days} days
       </div>
       {offer.proposed_unit_codes?.length > 0 && (
-        <div className="text-xs font-mono text-slate-600 mt-1">Units: {offer.proposed_unit_codes.join(', ')}</div>
+        <div className="text-xs font-mono text-[color:var(--caelum-text-muted)] mt-1">Units: {offer.proposed_unit_codes.join(', ')}</div>
       )}
-      {offer.status === 'held' && <div className="text-xs text-slate-600 mt-1">Held {formatDateTime(offer.held_at)} · extensions used {offer.hold_extensions}/1</div>}
-      {offer.decline_reason && <div className="text-xs text-slate-600 mt-1">Declined: {offer.decline_reason}{offer.decline_note ? ` — ${offer.decline_note}` : ''}</div>}
+      {offer.status === 'held' && <div className="text-xs text-[color:var(--caelum-text-muted)] mt-1">Held {formatDateTime(offer.held_at)} · extensions used {offer.hold_extensions}/1</div>}
+      {offer.decline_reason && <div className="text-xs text-[color:var(--caelum-text-muted)] mt-1">Declined: {offer.decline_reason}{offer.decline_note ? ` — ${offer.decline_note}` : ''}</div>}
+      {warnings.length > 0 && (
+        <div
+          role="status"
+          data-testid="offer-warnings"
+          className="mt-2 flex items-start gap-2 rounded-xl border border-[color:var(--caelum-amber-text)]/40 bg-bg-inset px-3 py-2 text-xs text-[color:var(--caelum-amber-text)]"
+        >
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" aria-hidden />
+          <ul className="list-disc pl-4 space-y-0.5">
+            {warnings.map((w, idx) => <li key={idx}>{w}</li>)}
+          </ul>
+        </div>
+      )}
       <ErrorBanner error={error} />
       {incoming && live && !declining && (
         <div className="flex flex-wrap gap-2 mt-3">

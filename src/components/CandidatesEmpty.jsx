@@ -9,7 +9,7 @@ const ACTIONS = [
   },
   {
     key: 'compatible',
-    label: 'Show compatible types',
+    label: 'Show compatible blood types',
     confirm: 'Show compatible blood types? Substitute units need an officer to confirm.',
   },
   {
@@ -21,21 +21,26 @@ const ACTIONS = [
 
 /**
  * Empty ranked-candidates panel. Action buttons appear only when their
- * handler prop is passed; each one opens a confirm step before running it.
+ * handler prop is passed; national and compatible open a confirm step, and
+ * manual either opens `renderManualPicker` or falls back to a confirm step.
  */
 export default function CandidatesEmpty({
   onSearchNational,
   onShowCompatible,
   onManualRequest,
+  renderManualPicker,
+  onManualToggle,
+  busy = false,
   children,
 }) {
   const handlers = {
     national: onSearchNational,
     compatible: onShowCompatible,
-    manual: onManualRequest,
+    manual: renderManualPicker || onManualRequest,
   };
   const available = ACTIONS.filter((action) => typeof handlers[action.key] === 'function');
   const [pendingKey, setPendingKey] = useState(null);
+  const [manualOpen, setManualOpen] = useState(false);
   const pending = available.find((action) => action.key === pendingKey) || null;
 
   useEffect(() => {
@@ -58,7 +63,19 @@ export default function CandidatesEmpty({
             <Button
               key={action.key}
               variant="ghost"
-              onClick={() => setPendingKey(action.key)}
+              className="text-[color:var(--caelum-text)]"
+              disabled={busy}
+              onClick={() => {
+                if (action.key === 'manual' && renderManualPicker) {
+                  setPendingKey(null);
+                  const next = !manualOpen;
+                  setManualOpen(next);
+                  onManualToggle?.(next);
+                } else {
+                  setManualOpen(false);
+                  setPendingKey(action.key);
+                }
+              }}
             >
               {action.label}
             </Button>
@@ -75,6 +92,7 @@ export default function CandidatesEmpty({
           <p id="fallback-confirm-title" className="text-sm text-[color:var(--caelum-text)]">{pending.confirm}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
+              busy={busy}
               onClick={() => {
                 handlers[pending.key]();
                 setPendingKey(null);
@@ -82,10 +100,11 @@ export default function CandidatesEmpty({
             >
               Confirm
             </Button>
-            <Button variant="ghost" onClick={() => setPendingKey(null)}>Cancel</Button>
+            <Button variant="ghost" className="text-[color:var(--caelum-text)]" onClick={() => setPendingKey(null)}>Cancel</Button>
           </div>
         </div>
       )}
+      {manualOpen && renderManualPicker?.({ close: () => setManualOpen(false) })}
       {children}
     </div>
   );
