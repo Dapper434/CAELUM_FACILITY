@@ -47,7 +47,7 @@ export default function RequestDetailPage() {
 
   const req = useAsync(() => requestsApi.get(id), [id], { interval: 15000 });
   const r = req.data;
-  const isRecipient = Boolean(r && (!r.recipient_facility_id || !facilityId || r.recipient_facility_id === facilityId));
+  const isRecipient = Boolean(r && r.recipient_facility_id && facilityId && r.recipient_facility_id === facilityId);
   const cands = useAsync(
     () => (r && r.status === 'open' && isRecipient
       ? requestsApi.candidates(id, { scope, includeCompatible })

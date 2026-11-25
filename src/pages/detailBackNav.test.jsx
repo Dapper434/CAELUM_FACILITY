@@ -37,7 +37,7 @@ import OffersPage, { OfferDetailPage } from './OffersPage';
 import InventoryPage, { InventoryUnitPage } from './InventoryPage';
 
 const request = {
-  id: 'r1', request_code: 'REQ-1', units_requested: 2, blood_group: 'O-', product_type: 'packed_rbc',
+  id: 'r1', request_code: 'REQ-1', recipient_facility_id: 'f1', units_requested: 2, blood_group: 'O-', product_type: 'packed_rbc',
   status: 'open', urgency: 'routine', created_at: '2026-11-01T00:00:00Z', needed_by: null, reason: '',
 };
 const transfer = {

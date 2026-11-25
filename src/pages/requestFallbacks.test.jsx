@@ -253,4 +253,46 @@ describe('RequestDetailPage fallbacks (contract 1.10.0)', () => {
     expect(screen.queryByRole('button', { name: 'Cancel request' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Back to requests' })).toBeInTheDocument();
   });
+
+  it.each([
+    ['missing', undefined],
+    ['null', null],
+  ])('hides candidates and fallbacks when recipient_facility_id is %s', async (_label, recipientFacilityId) => {
+    requestsApi.get.mockResolvedValue({ ...baseRequest, recipient_facility_id: recipientFacilityId });
+    requestsApi.candidates.mockResolvedValue({
+      candidates: [],
+      fallbacks_available: ['national', 'compatible', 'manual'],
+    });
+    show();
+
+    expect(await screen.findByText(/REQ-1/)).toBeInTheDocument();
+    expect(await screen.findByText('Candidate donors are only visible to the requesting hospital.')).toBeInTheDocument();
+    expect(requestsApi.candidates).not.toHaveBeenCalled();
+    expect(screen.queryByText('Ranked candidate donors')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Search nationally' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show compatible blood types' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Request from a hospital manually' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel request' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Back to requests' })).toBeInTheDocument();
+  });
+
+  it('hides candidates and fallbacks when recipient_facility_id is present and different from the caller', async () => {
+    authState.facilityId = 'fac-other';
+    requestsApi.get.mockResolvedValue({ ...baseRequest, recipient_facility_id: 'f1' });
+    requestsApi.candidates.mockResolvedValue({
+      candidates: [],
+      fallbacks_available: ['national', 'compatible', 'manual'],
+    });
+    show();
+
+    expect(await screen.findByText(/REQ-1/)).toBeInTheDocument();
+    expect(await screen.findByText('Candidate donors are only visible to the requesting hospital.')).toBeInTheDocument();
+    expect(requestsApi.candidates).not.toHaveBeenCalled();
+    expect(screen.queryByText('Ranked candidate donors')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Search nationally' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show compatible blood types' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Request from a hospital manually' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel request' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Back to requests' })).toBeInTheDocument();
+  });
 });
